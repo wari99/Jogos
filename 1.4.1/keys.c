@@ -1,5 +1,5 @@
 #include <SDL2/SDL.h>
-
+//Removido Poll; Testes abaixo do waitevent
 int main (int argc, char* args[])
 {
     /* INICIALIZACAO */
@@ -12,28 +12,22 @@ int main (int argc, char* args[])
     SDL_Renderer* ren = SDL_CreateRenderer(win, -1, 0);
 
     /* EXECUÇÃO */
-    SDL_Rect r = { 40,20, 10,10 };
     SDL_Event evt;
-//    srand(time(NULL));
+    SDL_Rect r = {40,20, 10,10};
     
-    int continua = 1;
-    SDL_Event evento;
-    
-    int cont = 0;
     int x,y;
+    int i = 0; //Contar quadrados
     
-    struct quadrado{
-        SDL_Rect r;
-        //int r, g, b;
-    };
-    struct quadrado quadrados[10];
+    typedef struct estruturaquadrado{
+        int posicaox;
+        int posicaoy;
+        //SDL_Rect r1 = {posicaox, posicaoy, 10, 10};
+
+    }estruturaquadrado;
     
-    while (continua) {
-    	while(SDL_PollEvent(&evento)){
-    		if(evento.type == SDL_QUIT){
-    			continua = 0;
-    		}
-    	}
+    estruturaquadrado quadrados[10];
+
+    while (1) {
     	
         SDL_SetRenderDrawColor(ren, 0xFF,0xFF,0xFF,0x00);
         SDL_RenderClear(ren);
@@ -41,18 +35,19 @@ int main (int argc, char* args[])
         SDL_RenderFillRect(ren, &r);
         SDL_RenderPresent(ren);
 
-	if(evento.type == SDL_MOUSEBUTTONDOWN){
-		x = evento.button.x;
-		y = evento.button.y;
-		
-		SDL_Rect quadrado = {x, y, 10, 10};
-		
-		SDL_RenderPresent(ren);
-		
-	}
-
         SDL_WaitEvent(&evt);
-        if (evt.type == SDL_KEYDOWN) {
+	
+	if(evt.type == SDL_MOUSEBUTTONDOWN){
+	    if(i < 10){
+	        SDL_GetMouseState(&x, &y);
+	        quadrados[i].posicaox = x;
+	        quadrados[i].posicaoy = y;
+	    }
+	    i++;
+
+	    SDL_RenderPresent(ren);
+	}        
+        else if (evt.type == SDL_KEYDOWN) {
             switch (evt.key.keysym.sym) {
                 case SDLK_UP:
                     if(r.y> 0){
@@ -75,6 +70,10 @@ int main (int argc, char* args[])
                     }
                     break;
             }
+        }
+        
+        else if (evt.type == SDL_QUIT){
+            break;
         }
     }
 
