@@ -1,14 +1,14 @@
 #include <SDL2/SDL.h>
 #include <time.h>
-//Removido Poll; Testes abaixo do waitevent
+//Removido Poll; Testes abaixo do waitevent; Testes no switch; Até 10 quadrados; Todos mudam de cor com movimento do mouse 
 int main (int argc, char* args[])
 {
     /* INICIALIZACAO */
     SDL_Init(SDL_INIT_EVERYTHING);
-    SDL_Window* win = SDL_CreateWindow("Movendo um Retângulo",
+    SDL_Window* win = SDL_CreateWindow("Quadrados Coloridos",
                          SDL_WINDOWPOS_UNDEFINED,
                          SDL_WINDOWPOS_UNDEFINED,
-                         200, 100, SDL_WINDOW_SHOWN
+                         400, 200, SDL_WINDOW_SHOWN
                       );
     SDL_Renderer* ren = SDL_CreateRenderer(win, -1, 0);
 
@@ -36,6 +36,7 @@ int main (int argc, char* args[])
 		SDL_SetRenderDrawColor(ren, rand() % 255,rand() % 255,rand() % 255,255);
         	SDL_RenderFillRect(ren, &rec[k]);	
 	}
+	
 	SDL_RenderPresent(ren);
 	if(evt.type == SDL_MOUSEBUTTONDOWN){
 	    if(i < 10){
@@ -50,35 +51,36 @@ int main (int argc, char* args[])
 
 	    SDL_RenderPresent(ren);
 	}        
-        else if (evt.type == SDL_KEYDOWN) {
-            switch (evt.key.keysym.sym) {
-                case SDLK_UP:
-                    if(r.y> 0){
-                    	r.y -= 5;
-                    }
-                    break;
-                case SDLK_DOWN:
-                    if(r.y< 90){
-                    	r.y += 5;
-                    }
-                    break;
-                case SDLK_LEFT:
-                    if(r.x> 0){
-                    	r.x -= 5;
-                    }
-                    break;
-                case SDLK_RIGHT:
-                    if(r.x < 190){
-                    	r.x += 5;
-                    }
-                    break;
-            }
+        switch (evt.type){
+            case SDL_KEYDOWN: 
+		    switch (evt.key.keysym.sym) {
+		        case SDLK_UP:
+		            if(r.y> 0){
+		            	r.y -= 5;
+		            }
+		            break;
+		        case SDLK_DOWN:
+		            if(r.y< 90){
+		            	r.y += 5;
+		            }
+		            break;
+		        case SDLK_LEFT:
+		            if(r.x> 0){
+		            	r.x -= 5;
+		            }
+		            break;
+		        case SDLK_RIGHT:
+		            if(r.x < 190){
+		            	r.x += 5;
+		            }
+		            break;
+		    }
+		    
+	    case SDL_QUIT:
+	        executando = 0;
+	        break;
         }
         
-        else if (evt.type == SDL_QUIT){
-            executando = 0;
-            break;
-        }
     }
 
     /* FINALIZACAO */
