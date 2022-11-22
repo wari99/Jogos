@@ -1,4 +1,5 @@
 #include <SDL2/SDL.h>
+#include <time.h>
 //Removido Poll; Testes abaixo do waitevent
 int main (int argc, char* args[])
 {
@@ -15,33 +16,35 @@ int main (int argc, char* args[])
     SDL_Event evt;
     SDL_Rect r = {40,20, 10,10};
     
+    int executando = 1;
     int x,y;
     int i = 0; //Contar quadrados
     
-    typedef struct estruturaquadrado{
-        int posicaox;
-        int posicaoy;
-        //SDL_Rect r1 = {posicaox, posicaoy, 10, 10};
+    struct SDL_Rect rec[10];
 
-    }estruturaquadrado;
-    
-    estruturaquadrado quadrados[10];
-
-    while (1) {
+    while (executando) {
     	
         SDL_SetRenderDrawColor(ren, 0xFF,0xFF,0xFF,0x00);
         SDL_RenderClear(ren);
         SDL_SetRenderDrawColor(ren, 0x00,0x00,0xFF,0x00);
         SDL_RenderFillRect(ren, &r);
-        SDL_RenderPresent(ren);
+       
 
         SDL_WaitEvent(&evt);
 	
+	for(int k = 0;k < 10;k++){
+		SDL_SetRenderDrawColor(ren, rand() % 255,rand() % 255,rand() % 255,255);
+        	SDL_RenderFillRect(ren, &rec[k]);	
+	}
+	SDL_RenderPresent(ren);
 	if(evt.type == SDL_MOUSEBUTTONDOWN){
 	    if(i < 10){
+	        int x , y;
 	        SDL_GetMouseState(&x, &y);
-	        quadrados[i].posicaox = x;
-	        quadrados[i].posicaoy = y;
+	        rec[i].x = x;
+	        rec[i].y = y;
+	        rec[i].h = 10;
+	        rec[i].w = 10;
 	    }
 	    i++;
 
@@ -73,6 +76,7 @@ int main (int argc, char* args[])
         }
         
         else if (evt.type == SDL_QUIT){
+            executando = 0;
             break;
         }
     }
