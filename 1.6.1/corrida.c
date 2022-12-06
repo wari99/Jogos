@@ -94,13 +94,13 @@ int main (int argc, char* args[])
 		    SDL_SetRenderDrawColor(ren, 0xFF, 0xFF, 0xFF,0x00);
 		    SDL_RenderFillRect(ren, &r33);
 		    
-		    if(r1.x >= 260 && !vencedor){ //Resetar vencedor **
+		    if(r1.x != 260 && !vencedor){ //Verificando quem venceu
 		    	vencedor = 1;
 		    }
-		    else if(r2.x >= 260 && !vencedor){
+		    else if(r2.x != 260 && !vencedor){
 		    	vencedor = 2;
 		    }
-		    else if(r3.x >= 260 && !vencedor){
+		    else if(r3.x != 260 && !vencedor){
 		    	vencedor = 3;
 		    }
 		    		
@@ -108,13 +108,12 @@ int main (int argc, char* args[])
 				continua = 0;
 				telacorrida = 0;
 				telafinal = 1;
-				
-				SDL_RenderClear(ren);
+				//break;
 			}
 						
 			SDL_RenderPresent(ren);
-			Uint32 antes = SDL_GetTicks();
 			
+			Uint32 antes = SDL_GetTicks();	
 			int isevt = SDL_WaitEventTimeout(&evt, espera);
 
 			if(isevt){
@@ -122,25 +121,30 @@ int main (int argc, char* args[])
 				if(espera < 0)espera =0;
 				switch(evt.type){
 					case SDL_MOUSEMOTION:
-						int x, y;
-		            	SDL_GetMouseState(&x, &y);
-		            	r3.x = x;
-		            	r33.x = x + 2;
+						if(r3.x < 260){
+							int x, y;
+				        	SDL_GetMouseState(&x, &y);
+				        	r3.x = x;
+				        	r33.x = x + 2;
+				        }
 					case SDL_KEYDOWN:
 						switch(evt.key.keysym.sym){
 							case SDLK_RIGHT:
-								r1.x += 5;
-								r11.x += 5;
-								break;
+								if(r1.x < 260){
+									r1.x += 5;
+									r11.x += 5;
+									break;
+								}
 						}
 				}
 			}
 
 		    else {
 		        espera = 100;
-		        r2.x += 3;
-		        r22.x += 3;
-			
+		        if(r2.x < 260){
+				    r2.x += 2;
+				    r22.x += 2;
+				}
 		    }SDL_RenderPresent(ren);
 		
 			if(evt.type == SDL_QUIT){
@@ -216,7 +220,7 @@ int main (int argc, char* args[])
 				SDL_Rect r33 = {132,102, 36,36};
 				SDL_SetRenderDrawColor(ren, 0x0,0x0,0x0,0x00);
 				SDL_RenderFillRect(ren, &r3);
-			  SDL_SetRenderDrawColor(ren, 0xFF, 0xFF, 0xFF,0x00);
+			    SDL_SetRenderDrawColor(ren, 0xFF, 0xFF, 0xFF,0x00);
 				SDL_RenderFillRect(ren, &r33);	
 			}
 						
