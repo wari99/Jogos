@@ -3,6 +3,21 @@
 #include <SDL2/SDL.h>
 #include <stdbool.h>
 
+int AUX_WaitEventTimeoutCount (SDL_Event* evt, Uint32* ms){
+	Uint32 antes = SDL_GetTicks();
+	Uint32 depois = 0;
+	int isevt = SDL_WaitEventTimeout(evt, *ms);
+	if(isevt){
+		depois = (SDL_GetTicks() - antes);
+		if(*ms < depois) depois = *ms;
+		*ms -= depois;		
+	}
+	else{
+		*ms = 500;	
+	}
+	return isevt;
+}
+
 int main (int argc, char* args[])
 {
     /* INICIALIZACAO */
@@ -15,20 +30,18 @@ int main (int argc, char* args[])
     SDL_Renderer* ren = SDL_CreateRenderer(win, -1, 0);
 
 
-    int continua = 1, telacorrida = 1, telafinal = 0;    
+    int continua = 1, telacorrida = 1, telafinal = 0; 
     SDL_Rect r1 = { 10, 40, 20,20 };
     SDL_Rect r2 = { 10, 120, 20,20 };
     SDL_Rect r3 = { 10, 210, 20,20 };
-
+    
+	int x, y;
     SDL_Rect r11 = {12,42, 16,16};
 	SDL_Rect r22 = {12,122, 16,16};
 	SDL_Rect r33 = {12,212, 16, 16};
-
-    int espera = 200;
+    int espera = 500;
 	int auxlinha = 0, vencedor = 0, segundolugar = 0, terceirolugar = 0;
-    SDL_Event evt;
-    Uint32 antes = SDL_GetTicks();
-    int isevt = SDL_WaitEventTimeout(&evt, espera);    
+    
 
     /* EXECUÇÃO */
     while (continua) {
@@ -93,45 +106,22 @@ int main (int argc, char* args[])
 
 		    SDL_SetRenderDrawColor(ren, 0xFF, 0xFF, 0xFF,0x00);
 		    SDL_RenderFillRect(ren, &r33);
-
-		    if(r1.x >= 260 && !vencedor){ //Resetar vencedor **
-		    	vencedor = 1;
-		    }
-		    else if(r2.x >= 260 && !vencedor){
-		    	vencedor = 2;
-		    }
-		    else if(r3.x >= 260 && !vencedor){
-		    	vencedor = 3;
-		    }
-
-			if(r1.x >= 260 && r2.x >=260 && r3.x >=260){ //Se passar da linha
-				continua = 0;
-				telacorrida = 0;
-				telafinal = 1;
-
-				SDL_RenderClear(ren);
-			}
-
+			SDL_Event evt;
 			SDL_RenderPresent(ren);
-			Uint32 antes = SDL_GetTicks();
-
-			int isevt = SDL_WaitEventTimeout(&evt, espera);
-
-			if(isevt){
-				espera -= (SDL_GetTicks() - antes);
-				if(espera < 0)espera =0;
+			
+			if(AUX_WaitEventTimeoutCount(&evt, &espera)){
 				switch(evt.type){
 					case SDL_MOUSEMOTION:
-						if(r3.x < 260){
-							int x, y;
+						if(r3.x < 280){
 				        	SDL_GetMouseState(&x, &y);
 				        	r3.x = x;
 				        	r33.x = x + 2;
+				        	break;
 		            	}
 					case SDL_KEYDOWN:
 						switch(evt.key.keysym.sym){
 							case SDLK_RIGHT:
-								if(r1.x < 260){
+								if(r1.x < 280){
 									r1.x += 2;
 									r11.x += 2;
 									break;
@@ -142,12 +132,31 @@ int main (int argc, char* args[])
 
 		    else {
 		        espera = 100;
-		        if(r2.x < 260){
+		        if(r22.x < 280){
 				    r2.x += 3;
 				    r22.x += 3;
 				}
-		    }SDL_RenderPresent(ren);
+		    }
+			
+		    if(r1.x >= 260 && !vencedor){ 
+		    	vencedor = 1;
+		    }
+		    else if(r2.x >= 260 && !vencedor){
+		    	vencedor = 2;
+		    }
+		    else if(r3.x >= 260 && !vencedor){
+		    	vencedor = 3;
+		    }
 
+			if(r11.x >= 280 && r22.x >=280 && r33.x >=280){ //Se passar da linha
+				continua = 0;
+				telacorrida = 0;
+				telafinal = 1;
+				espera = 0;
+				break;
+			}
+			
+			
 			if(evt.type == SDL_QUIT){
 				continua = 0;
 				break;
@@ -157,7 +166,6 @@ int main (int argc, char* args[])
 		while(telafinal){  
 			SDL_SetRenderDrawColor(ren, 0x4B, 0x0, 0x82, 0x00);
 			SDL_RenderClear(ren);
-			SDL_WaitEvent(&evt);
 
 			SDL_SetRenderDrawColor(ren, 0xFF, 0xE4, 0xE1, 0x00);
 			SDL_Rect fundo = {10,10,280,280};
@@ -221,31 +229,31 @@ int main (int argc, char* args[])
 				SDL_Rect r33 = {132,102, 36,36};
 				SDL_SetRenderDrawColor(ren, 0x0,0x0,0x0,0x00);
 				SDL_RenderFillRect(ren, &r3);
-			  SDL_SetRenderDrawColor(ren, 0xFF, 0xFF, 0xFF,0x00);
+			 	SDL_SetRenderDrawColor(ren, 0xFF, 0xFF, 0xFF,0x00);
 				SDL_RenderFillRect(ren, &r33);	
 			}
-
+			
 			SDL_RenderPresent(ren);
-			if (isevt) {
-				espera -= (SDL_GetTicks() - antes);
-				if (espera < 0) {
-				    espera = 0;
-				}
+			SDL_Event evento;
+			SDL_WaitEvent(&evento);
+	        if (evento.type == SDL_QUIT){
+	        	continua = 0;
+	        	break;
+	        }
 
-		        if (evt.type == SDL_QUIT){
-		        	continua = 0;
-		        	break;
-		        }
-
-		        if (evt.type == SDL_KEYDOWN){
-		        	switch(evt.key.keysym.sym){
-		        		case SDLK_ESCAPE:
-		        			telafinal = 0; //apaga final 
-		        			telacorrida = 1; //inicia a corrida
-		        			continua = 1; //continua exibicao
-		        	}
-		        }
-		}
+	        if (evento.type == SDL_KEYDOWN){
+	        	switch(evento.key.keysym.sym){
+	        		case SDLK_ESCAPE:
+	        			telafinal = 0; //apaga final 
+	        			telacorrida = 1; //inicia a corrida
+	        			continua = 1; //continua exibicao
+	        			r1.x = r2.x = r3.x = 10;
+	          			r11.x = r22.x = r33.x = 12;
+	        			vencedor = 0;
+	        			break;
+	        	}
+	        }
+		
 	}
 }
 
