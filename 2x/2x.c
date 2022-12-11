@@ -32,6 +32,7 @@ int main (int argc, char* args[])
     int continua = 1, espera = 500; 
     int x,y,dx,dy;
 	int selecionou = 0, clicou = 0, arrastou = 0, soltou = 0, cancelou = 0;
+	int auxposX, auxposY;	
 	
     SDL_Rect r1 = { 200, 200, 40,40 };    
 
@@ -54,10 +55,11 @@ int main (int argc, char* args[])
 		stringRGBA(ren, 150,60, "Soltou!", 55,55,55,255);
 		stringRGBA(ren, 150,70, "Cancelou!", 55,55,55,255);
 		
-		if(clicou && !arrastou) stringRGBA(ren,150,40,"Clicou!",0,255,0,255);
-		if(arrastou) stringRGBA(ren, 150,50, "Arrastando...", 0,255,0,255);
-		if(soltou) stringRGBA(ren, 150,60, "Soltou!", 0,255,0,255);
-		if(cancelou) stringRGBA(ren, 150,70, "Cancelou!", 0,255,0,255);
+		if(clicou) stringRGBA(ren,150,40,"Clicou!",0,255,0,255);
+		else if(arrastou) stringRGBA(ren, 150,50, "Arrastando...", 0,255,0,255);
+		else if(soltou) stringRGBA(ren, 150,60, "Soltou!", 0,255,0,255);
+		else if(cancelou) stringRGBA(ren, 150,70, "Cancelou!", 0,255,0,255);
+		else -1;
 		
 		SDL_RenderPresent(ren);
 		SDL_Event evt;
@@ -77,6 +79,8 @@ int main (int argc, char* args[])
 						if(evt.button.button == SDL_BUTTON_LEFT){
 							if(arrastou && selecionou){
 								soltou = 1;
+								auxposX = r1.x;
+								auxposY = r1.y;
 							}
 							else if(selecionou){
 								clicou = 1;
@@ -97,6 +101,8 @@ int main (int argc, char* args[])
 					if(evt.key.keysym.sym == SDLK_ESCAPE){
 						cancelou = 1;
 						selecionou = arrastou = soltou = clicou = 0;
+						r1.x = auxposX;
+						r1.y = auxposY;
 						break;
 					}
 			}	
