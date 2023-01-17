@@ -49,7 +49,7 @@ void mudaCor(SDL_Renderer* ren,SDL_Surface* listaS[],SDL_Texture* listaT[],SDL_C
 }
 
 void rodaJogo(SDL_Renderer* ren, bool *menu, bool *running, bool *gameIsRunning){
-	//cria goleiro
+	//cria goleiro/
 	dadosGoleiro goleiro;
 	goleiro.rect = (SDL_Rect) {200, 100, 100,150};
 	goleiro.corte = (SDL_Rect) {0,0,100,150};
