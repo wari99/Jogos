@@ -23,6 +23,166 @@ void mudaCor(SDL_Renderer* ren,SDL_Surface* listaS[],SDL_Texture* listaT[],SDL_C
 	listaT[i] = SDL_CreateTextureFromSurface(ren,listaS[i]);
 }
 
+void rodaJogo(SDL_Renderer* ren, bool *menu, bool *running, bool *gameIsRunning){
+	SDL_Texture* img = IMG_LoadTexture(ren, "campo1.png");
+	SDL_Texture* img2 = IMG_LoadTexture(ren, "goleiro.png");
+	SDL_Texture* imgbola = IMG_LoadTexture(ren, "bola.png");
+	bool selecionado = false;
+	
+	bool isCounting = true;
+	SDL_Point mouse = {0,0};
+	int espera = 200;
+	int x1 = 200;
+	int x3 = 400, y3 = 250;
+	int statusBall = 0;
+	int isMoving = 1; 
+	int x,y,dx,dy; 
+	Uint32 antes = 0;
+	short int cont;
+	unsigned short int goleiroAux = 0;
+    /* EXECUÇÃO */
+	SDL_Rect rB = {x3, y3, 40,40};
+	SDL_Rect corte2 = {0,0,100,150};
+	SDL_Rect r2 = {x1, 100, 100,150};
+	
+	
+	int contador = 0;
+	while(*running){
+			espera = MAX(espera - (int)(SDL_GetTicks() - antes), 0);
+		  	SDL_Event evt; 
+
+		  	antes = SDL_GetTicks();
+			SDL_SetRenderDrawColor(ren, 0xFF, 0xFF, 0xFF, 0x00);
+			SDL_RenderClear(ren);
+
+			SDL_RenderCopy(ren, img, NULL, NULL);//FUNDO DE TELA
+			
+			SDL_RenderCopy(ren, img2, &corte2, &r2);
+			SDL_RenderCopy(ren, imgbola, NULL, &rB);// FUNDO BOLA
+			SDL_RenderPresent(ren);
+		  	int isevt = AUX_WaitEventTimeoutCount(&evt,&espera);    
+		    if(isevt){ 	
+				switch (evt.type){
+					case SDL_WINDOWEVENT:
+		            	if (SDL_WINDOWEVENT_CLOSE == evt.window.event){
+							*running = false;
+							*gameIsRunning = false;
+							*menu = false;
+						} break;	
+					case SDL_MOUSEBUTTONDOWN:
+						//isCounting = false;
+						if(evt.button.button == SDL_BUTTON_LEFT){
+							SDL_GetMouseState(&mouse.x, &mouse.y);
+		    				
+							/*if(SDL_PointInRect(&mouse,&rB)) {
+								dx=rB.x-mouse.x;
+								dy=rB.y-mouse.y;
+								selecionado = true;	
+								printf("\nBola clicada");
+							}*/
+						}
+						break;
+					//case SDL_MOUSEBUTTONUP: acao goleiro random number + mov bola
+						case SDL_MOUSEBUTTONUP:
+							SDL_GetMouseState(&mouse.x, &mouse.y);
+							if(evt.button.button == SDL_BUTTON_LEFT){
+								if(evt.button.state==SDL_RELEASED){
+									selecionado = false;
+									isCounting = false;
+									rB.x = contador;
+									
+									if(rB.x>=11 && rB.x<=170 && rB.y>=66 && rB.y<=152){
+										printf("\nEspaco A!");
+										statusBall = 1;
+										break;
+									}
+									else if(rB.x>=171 && rB.x <= 330 && rB.y>= 66 && rB.y<= 152){
+										printf("\nEspaco B!");
+										statusBall = 2;
+										break;
+									}
+									else if(rB.x>=331 && rB.x<=491 && rB.y>=66 && rB.y<=152){
+										printf("\nEspaco C!");
+										statusBall = 3;
+										break;
+									}
+
+									else if(rB.x>=11 && rB.x<=170 && rB.y>=152 && rB.y<=238){
+										printf("\nEspaco D!");
+										statusBall = 4;
+										break;
+									}
+									else if(rB.x>=171 && rB.x <= 330 && rB.y>= 152 && rB.y<= 238){
+										printf("\nEspaco E!");
+										statusBall = 5;
+										break;
+									}
+									else if(rB.x>=331 && rB.x<=491 && rB.y>=152 && rB.y<=238){
+										printf("\nEspaco F!");
+										statusBall = 6;
+										break;
+									}
+									else{
+										printf("\nFora!");
+										statusBall = 7;
+										break;
+									}
+									break;
+								}
+							}
+						case SDL_MOUSEMOTION:
+							SDL_GetMouseState(&mouse.x, &mouse.y);
+							if(SDL_PointInRect(&mouse,&rB) && selecionado){
+								rB.x=mouse.x+dx;
+								rB.y=mouse.y+dy;
+							
+							}	
+							break;
+						case SDL_KEYDOWN:
+							if(evt.key.keysym.sym == SDLK_ESCAPE){
+								case SDLK_ESCAPE:
+								*menu = true;
+								*running = false;
+							}
+							break;
+				}
+			}
+			else{
+
+				if(isCounting){
+					contador += 5;
+			  		printf("\n %d ", contador);
+			   		if(contador == 300) contador = 0;
+			   		rB.x = contador;
+			   		
+		   		}	
+		   		if(goleiroAux == 20){
+					switch(isMoving){
+						case 1:
+							corte2 = (SDL_Rect) {0,0,100,150};
+							x1 = 220;
+							break;
+						case 2:
+							corte2 = (SDL_Rect) {100,0,100,150};
+							x1 = 230;
+							break;
+						default:
+							isMoving = 0;
+							break;
+					}isMoving++;
+					goleiroAux = 0;
+				}
+				goleiroAux++;
+			espera = 25;
+			
+			}
+		
+	}
+	SDL_DestroyTexture(img);
+ 	SDL_DestroyTexture(img2);
+ 	SDL_DestroyTexture(imgbola);
+
+}
 
 void chamaMenu(SDL_Renderer* ren, bool *menu, bool *running, bool *gameIsRunning){
     TTF_Init();
@@ -155,152 +315,21 @@ int main (int argc, char* args[])
     IMG_Init(0);
   	SDL_Window* win = create_window();
     SDL_Renderer* ren = create_renderer(win);
-	SDL_Texture* img = IMG_LoadTexture(ren, "campo1.png");
-	SDL_Texture* img2 = IMG_LoadTexture(ren, "goleiro.png");
-	SDL_Texture* imgbola = IMG_LoadTexture(ren, "bola.png");
+
 	/*assert(img != NULL);	
 	assert(img2 != NULL);	
 	assert(imgbola != NULL);*/
 	bool menu = true;
 	bool running = false;
 	bool gameIsRunning = true;
-	bool selecionado = false;
-	SDL_Point mouse = {0,0};
-	int espera = 200;
-	int x1 = 200;
-	int x3 = 400, y3 = 250;
-	int statusBall = 0;
-	int isMoving = 1; 
-	int x,y,dx,dy; 
-	Uint32 antes = 0;
-	short int cont;
-    /* EXECUÇÃO */
-	SDL_Rect rB = {x3, y3, 40,40};
-	SDL_Rect corte2 = {0,0,100,150};
-	SDL_Rect r2 = {x1, 100, 100,150};
+	
     while(gameIsRunning){
     
 		chamaMenu(ren,&menu,&running,&gameIsRunning);
+		rodaJogo(ren,&menu,&running,&gameIsRunning);
 		
-		while(running){
-			espera = MAX(espera - (int)(SDL_GetTicks() - antes), 0);
-		  	SDL_Event evt; 
-
-		  	antes = SDL_GetTicks();
-			SDL_SetRenderDrawColor(ren, 0xFF, 0xFF, 0xFF, 0x00);
-			SDL_RenderClear(ren);
-
-			SDL_RenderCopy(ren, img, NULL, NULL);//FUNDO DE TELA
-			
-			SDL_RenderCopy(ren, img2, &corte2, &r2);
-			SDL_RenderCopy(ren, imgbola, NULL, &rB);// FUNDO BOLA
-			SDL_RenderPresent(ren);
-		  	int isevt = AUX_WaitEventTimeoutCount(&evt,&espera);    
-		    if(isevt){       	
-				switch (evt.type){
-					case SDL_WINDOWEVENT:
-		            	if (SDL_WINDOWEVENT_CLOSE == evt.window.event){
-							running = false;
-							gameIsRunning = false;
-							menu = false;
-						} break;	
-					case SDL_MOUSEBUTTONDOWN:
-						if(evt.button.button == SDL_BUTTON_LEFT){
-							SDL_GetMouseState(&mouse.x, &mouse.y);
-							if(SDL_PointInRect(&mouse,&rB)) {
-								dx=rB.x-mouse.x;
-								dy=rB.y-mouse.y;
-								selecionado = true;	
-								printf("\nBola clicada");
-							}
-						}
-						break;
-					//case SDL_MOUSEBUTTONUP: acao goleiro random number + mov bola
-						case SDL_MOUSEBUTTONUP:
-							SDL_GetMouseState(&mouse.x, &mouse.y);
-							if(evt.button.button == SDL_BUTTON_LEFT){
-								if(evt.button.state==SDL_RELEASED){
-									selecionado = false;
-									if(rB.x>=11 && rB.x<=170 && rB.y>=66 && rB.y<=152){
-										printf("\nEspaco A!");
-										statusBall = 1;
-										break;
-									}
-									else if(rB.x>=171 && rB.x <= 330 && rB.y>= 66 && rB.y<= 152){
-										printf("\nEspaco B!");
-										statusBall = 2;
-										break;
-									}
-									else if(rB.x>=331 && rB.x<=491 && rB.y>=66 && rB.y<=152){
-										printf("\nEspaco C!");
-										statusBall = 3;
-										break;
-									}
-
-									else if(rB.x>=11 && rB.x<=170 && rB.y>=152 && rB.y<=238){
-										printf("\nEspaco D!");
-										statusBall = 4;
-										break;
-									}
-									else if(rB.x>=171 && rB.x <= 330 && rB.y>= 152 && rB.y<= 238){
-										printf("\nEspaco E!");
-										statusBall = 5;
-										break;
-									}
-									else if(rB.x>=331 && rB.x<=491 && rB.y>=152 && rB.y<=238){
-										printf("\nEspaco F!");
-										statusBall = 6;
-										break;
-									}
-									else{
-										printf("\nFora!");
-										statusBall = 7;
-										break;
-									}
-									break;
-								}
-							}
-						case SDL_MOUSEMOTION:
-							SDL_GetMouseState(&mouse.x, &mouse.y);
-							if(SDL_PointInRect(&mouse,&rB) && selecionado){
-								rB.x=mouse.x+dx;
-								rB.y=mouse.y+dy;
-							
-							}	
-							break;
-						case SDL_KEYDOWN:
-							if(evt.key.keysym.sym == SDLK_ESCAPE){
-								case SDLK_ESCAPE:
-								menu = true;
-								running = false;
-							}
-							break;
-				}
-			}
-			else{	
-				switch(isMoving){
-					case 1:
-						corte2 = (SDL_Rect) {0,0,100,150};
-						x1 = 220;
-						break;
-					case 2:
-						corte2 = (SDL_Rect) {100,0,100,150};
-						x1 = 230;
-						break;
-					default:
-						isMoving = 0;
-						break;
-				}isMoving++;
-			espera = 400;
-			
-			}
-		
-		}
 	}
     /* FINALIZACAO */
- 	SDL_DestroyTexture(img);
- 	SDL_DestroyTexture(img2);
- 	SDL_DestroyTexture(imgbola);
     SDL_DestroyRenderer(ren);
     SDL_DestroyWindow(win);
     SDL_Quit();
