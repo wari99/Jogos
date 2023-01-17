@@ -17,6 +17,7 @@ typedef struct dadosGoleiro{
 	SDL_Rect corte;
 	SDL_Texture* texture;
 	unsigned short int state;
+	unsigned short int aux;
 	
 }dadosGoleiro;
 
@@ -30,6 +31,7 @@ typedef struct dadosBarra{
 	SDL_Rect rect;
 	SDL_Texture* texture;
 	unsigned short int state;
+	struct dadosBola bola;
 }dadosBarra;
 
 int AUX_WaitEventTimeoutCount(SDL_Event* evt, Uint32* ms){
@@ -47,8 +49,34 @@ void mudaCor(SDL_Renderer* ren,SDL_Surface* listaS[],SDL_Texture* listaT[],SDL_C
 }
 
 void rodaJogo(SDL_Renderer* ren, bool *menu, bool *running, bool *gameIsRunning){
-	SDL_Texture* img = IMG_LoadTexture(ren, "novogol1.png");
-	SDL_Texture* img2 = IMG_LoadTexture(ren, "goleiro.png");
+	//cria goleiro
+	dadosGoleiro goleiro;
+	goleiro.rect = (SDL_Rect) {200, 100, 100,150};
+	goleiro.corte = (SDL_Rect) {0,0,100,150};
+	goleiro.texture = IMG_LoadTexture(ren, "goleiro.png");
+	goleiro.state = esperando;
+	goleiro.aux = 0;
+	
+	//cria barra1
+	dadosBarra barra1;
+	barra1.rect = (SDL_Rect) {156,318,186,30};
+	barra1.texture = IMG_LoadTexture(ren, "barra.png");
+	barra1.state = emuso;
+	barra1.bola.rect = (SDL_Rect) {400, 300, 40,40};
+	barra1.bola.texture = IMG_LoadTexture(ren, "bola.png");
+	
+	//cria barra2
+	dadosBarra barra2;
+	barra2.rect = (SDL_Rect) {580,87,580,272};
+	barra2.texture = IMG_LoadTexture(ren, "barra.png");
+	barra2.state = semuso;
+	barra2.bola.rect = (SDL_Rect) {400, 300, 40,40};
+	barra2.bola.texture = IMG_LoadTexture(ren, "bola.png");
+		
+	//cria bola
+	dadosBola bola;
+	
+	SDL_Texture* img = IMG_LoadTexture(ren, "novogol.png");
 	SDL_Texture* imgbola = IMG_LoadTexture(ren, "bola.png");
 	bool selecionado = false;
 	
@@ -56,22 +84,20 @@ void rodaJogo(SDL_Renderer* ren, bool *menu, bool *running, bool *gameIsRunning)
 	bool isCountingY = true;
 	SDL_Point mouse = {0,0};
 	int espera = 200;
-	int x1 = 200;
 	int x3 = 400, y3 = 300;
 	
 	int statusBall = 0, isMoving = 1; 
 	int x,y,dx,dy; 
 	Uint32 antes = 0;
 	short int cont;
-	unsigned short int goleiroAux = 0;
     /* EXECUÇÃO */
 	SDL_Rect rB = {x3, y3, 40,40};
+	
 	SDL_Rect rBY = {520,50, 40,40};
-	SDL_Rect corte2 = {0,0,100,150};
-	SDL_Rect r2 = {x1, 100, 100,150};
 	
-	
-	int contadorX = 2;
+	assert(img != NULL);	
+	assert(imgbola != NULL);	
+	int contadorX = 140;
 	int contadorY = 600;
 	short int bolaaux = 1;
 	
@@ -85,12 +111,10 @@ void rodaJogo(SDL_Renderer* ren, bool *menu, bool *running, bool *gameIsRunning)
 
 			SDL_RenderCopy(ren, img, NULL, NULL);//FUNDO DE TELA
 			
-			SDL_RenderCopy(ren, img2, &corte2, &r2);
-			SDL_RenderCopy(ren, imgbola, NULL, &rB);// BOLA X
+			SDL_RenderCopy(ren, goleiro.texture, &goleiro.corte, &goleiro.rect);
+			SDL_RenderCopy(ren, barra1.bola.texture, NULL, &barra1.bola.rect);// BOLA X
 			SDL_RenderCopy(ren, imgbola, NULL, &rBY); //BOLA Y
-			assert(img != NULL);	
-			assert(img2 != NULL);	
-			assert(imgbola != NULL);			
+					
 			
 			SDL_RenderPresent(ren);
 		  	int isevt = AUX_WaitEventTimeoutCount(&evt,&espera);    
@@ -186,33 +210,31 @@ void rodaJogo(SDL_Renderer* ren, bool *menu, bool *running, bool *gameIsRunning)
 				if(isCounting){
 					contadorX += 5 * bolaaux;
 			  		printf("\n %d ", contadorX);
-			   		if(contadorX >= 300 || contadorX <= 0) bolaaux *= -1;
-			   		rB.x = contadorX;
+			   		if(contadorX >= 330 || contadorX <= 140) bolaaux *= -1;
+			   		barra1.bola.rect.x = contadorX;
 			   					   		
 		   		}	
-		   		if(goleiroAux == 30){
+		   		if(goleiro.aux == 30 && goleiro.state == esperando){
 					switch(isMoving){
 						case 1:
-							corte2 = (SDL_Rect) {0,0,100,150};
+							goleiro.corte = (SDL_Rect) {0,0,100,150};
 							break;
 						case 2:
-							corte2 = (SDL_Rect) {100,0,100,150};
-							//goleiro->corte = (SDL_Rect) {100,0,100,150};
+							goleiro.corte = (SDL_Rect) {100,0,100,150};
 							break;
 						default:
 							isMoving = 0;
 							break;
 					}isMoving++;
-					goleiroAux = 0;
+					goleiro.aux = 0;
 				}
-				goleiroAux++;
+				(goleiro.aux)++;
 			espera = 20;
 			
 			}
 		
 	}
 	SDL_DestroyTexture(img);
- 	SDL_DestroyTexture(img2);
  	SDL_DestroyTexture(imgbola);
 
 }
@@ -364,3 +386,4 @@ int main (int argc, char* args[])
     SDL_DestroyWindow(win);
     SDL_Quit();
 }
+	
