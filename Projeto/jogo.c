@@ -8,6 +8,29 @@
 #include <stdlib.h>
 #define MAX(x,y) (((x) > (y)) ? (x) : (y))
 
+enum estadoGoleiro {esperando = 0, agarrando};
+enum estadoBola {parada = 0, girando};
+enum estadoBarra {semuso = 0, emuso};
+
+typedef struct dadosGoleiro{
+	SDL_Rect rect;
+	SDL_Rect corte;
+	SDL_Texture* texture;
+	unsigned short int state;
+	
+}dadosGoleiro;
+
+typedef struct dadosBola{
+	SDL_Rect rect;
+	SDL_Texture* texture;
+	unsigned short int state;
+}dadosBola;
+
+typedef struct dadosBarra{
+	SDL_Rect rect;
+	SDL_Texture* texture;
+	unsigned short int state;
+}dadosBarra;
 
 int AUX_WaitEventTimeoutCount(SDL_Event* evt, Uint32* ms){
     Uint32 antes = SDL_GetTicks();
@@ -24,29 +47,34 @@ void mudaCor(SDL_Renderer* ren,SDL_Surface* listaS[],SDL_Texture* listaT[],SDL_C
 }
 
 void rodaJogo(SDL_Renderer* ren, bool *menu, bool *running, bool *gameIsRunning){
-	SDL_Texture* img = IMG_LoadTexture(ren, "campo1.png");
+	SDL_Texture* img = IMG_LoadTexture(ren, "novogol1.png");
 	SDL_Texture* img2 = IMG_LoadTexture(ren, "goleiro.png");
 	SDL_Texture* imgbola = IMG_LoadTexture(ren, "bola.png");
 	bool selecionado = false;
 	
 	bool isCounting = true;
+	bool isCountingY = true;
 	SDL_Point mouse = {0,0};
 	int espera = 200;
 	int x1 = 200;
-	int x3 = 400, y3 = 250;
-	int statusBall = 0;
-	int isMoving = 1; 
+	int x3 = 400, y3 = 300;
+	
+	int statusBall = 0, isMoving = 1; 
 	int x,y,dx,dy; 
 	Uint32 antes = 0;
 	short int cont;
 	unsigned short int goleiroAux = 0;
     /* EXECUÇÃO */
 	SDL_Rect rB = {x3, y3, 40,40};
+	SDL_Rect rBY = {520,50, 40,40};
 	SDL_Rect corte2 = {0,0,100,150};
 	SDL_Rect r2 = {x1, 100, 100,150};
 	
 	
-	int contador = 0;
+	int contadorX = 2;
+	int contadorY = 600;
+	short int bolaaux = 1;
+	
 	while(*running){
 			espera = MAX(espera - (int)(SDL_GetTicks() - antes), 0);
 		  	SDL_Event evt; 
@@ -58,7 +86,12 @@ void rodaJogo(SDL_Renderer* ren, bool *menu, bool *running, bool *gameIsRunning)
 			SDL_RenderCopy(ren, img, NULL, NULL);//FUNDO DE TELA
 			
 			SDL_RenderCopy(ren, img2, &corte2, &r2);
-			SDL_RenderCopy(ren, imgbola, NULL, &rB);// FUNDO BOLA
+			SDL_RenderCopy(ren, imgbola, NULL, &rB);// BOLA X
+			SDL_RenderCopy(ren, imgbola, NULL, &rBY); //BOLA Y
+			assert(img != NULL);	
+			assert(img2 != NULL);	
+			assert(imgbola != NULL);			
+			
 			SDL_RenderPresent(ren);
 		  	int isevt = AUX_WaitEventTimeoutCount(&evt,&espera);    
 		    if(isevt){ 	
@@ -89,7 +122,8 @@ void rodaJogo(SDL_Renderer* ren, bool *menu, bool *running, bool *gameIsRunning)
 								if(evt.button.state==SDL_RELEASED){
 									selecionado = false;
 									isCounting = false;
-									rB.x = contador;
+									
+									rB.x = contadorX;
 									
 									if(rB.x>=11 && rB.x<=170 && rB.y>=66 && rB.y<=152){
 										printf("\nEspaco A!");
@@ -150,21 +184,20 @@ void rodaJogo(SDL_Renderer* ren, bool *menu, bool *running, bool *gameIsRunning)
 			else{
 
 				if(isCounting){
-					contador += 5;
-			  		printf("\n %d ", contador);
-			   		if(contador == 300) contador = 0;
-			   		rB.x = contador;
-			   		
+					contadorX += 5 * bolaaux;
+			  		printf("\n %d ", contadorX);
+			   		if(contadorX >= 300 || contadorX <= 0) bolaaux *= -1;
+			   		rB.x = contadorX;
+			   					   		
 		   		}	
-		   		if(goleiroAux == 20){
+		   		if(goleiroAux == 30){
 					switch(isMoving){
 						case 1:
 							corte2 = (SDL_Rect) {0,0,100,150};
-							x1 = 220;
 							break;
 						case 2:
 							corte2 = (SDL_Rect) {100,0,100,150};
-							x1 = 230;
+							//goleiro->corte = (SDL_Rect) {100,0,100,150};
 							break;
 						default:
 							isMoving = 0;
@@ -173,7 +206,7 @@ void rodaJogo(SDL_Renderer* ren, bool *menu, bool *running, bool *gameIsRunning)
 					goleiroAux = 0;
 				}
 				goleiroAux++;
-			espera = 25;
+			espera = 20;
 			
 			}
 		
@@ -286,7 +319,7 @@ SDL_Window* create_window(void) {
     SDL_Window* win = SDL_CreateWindow("ProjetoP2",
                          SDL_WINDOWPOS_UNDEFINED,
                          SDL_WINDOWPOS_UNDEFINED,
-                         500, 350, SDL_WINDOW_SHOWN
+                         700, 350, SDL_WINDOW_SHOWN
                       );
 
     if(win==NULL) {
@@ -316,9 +349,6 @@ int main (int argc, char* args[])
   	SDL_Window* win = create_window();
     SDL_Renderer* ren = create_renderer(win);
 
-	/*assert(img != NULL);	
-	assert(img2 != NULL);	
-	assert(imgbola != NULL);*/
 	bool menu = true;
 	bool running = false;
 	bool gameIsRunning = true;
