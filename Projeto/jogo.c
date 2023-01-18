@@ -6,11 +6,12 @@
 #include <SDL2/SDL_image.h>
 #include <time.h>
 #include <stdlib.h>
+#include <math.h>
 #define MAX(x,y) (((x) > (y)) ? (x) : (y))
 
 enum estadoGoleiro {esperando = 0, agarrando};
 enum estadoBola {parada = 0, girando};
-enum estadoBarra {semuso = 0, emuso};
+enum estadoBarra {off = 0, on};
 
 typedef struct dadosGoleiro{
 	SDL_Rect rect;
@@ -18,6 +19,7 @@ typedef struct dadosGoleiro{
 	SDL_Texture* texture;
 	unsigned short int state;
 	unsigned short int aux;
+	unsigned short int pos;
 	
 }dadosGoleiro;
 
@@ -49,28 +51,28 @@ void mudaCor(SDL_Renderer* ren,SDL_Surface* listaS[],SDL_Texture* listaT[],SDL_C
 }
 
 void rodaJogo(SDL_Renderer* ren, bool *menu, bool *running, bool *gameIsRunning){
-	//cria goleiro/
+	//cria goleiro
 	dadosGoleiro goleiro;
-	goleiro.rect = (SDL_Rect) {200, 100, 100,150};
-	goleiro.corte = (SDL_Rect) {0,0,100,150};
-	goleiro.texture = IMG_LoadTexture(ren, "goleiro.png");
+	goleiro.rect = (SDL_Rect) {150, 100, 200,170};
+	goleiro.corte = (SDL_Rect) {0,0,200,170};
+	goleiro.texture = IMG_LoadTexture(ren, "goleiros200x170.png");
 	goleiro.state = esperando;
 	goleiro.aux = 0;
-	
+
 	//cria barra1
 	dadosBarra barra1;
 	barra1.rect = (SDL_Rect) {156,318,186,30};
 	barra1.texture = IMG_LoadTexture(ren, "barra.png");
-	barra1.state = emuso;
-	barra1.bola.rect = (SDL_Rect) {400, 300, 40,40};
+	barra1.state = on;
+	barra1.bola.rect = (SDL_Rect) {200, 300, 40,40};
 	barra1.bola.texture = IMG_LoadTexture(ren, "bola.png");
 	
 	//cria barra2
 	dadosBarra barra2;
-	barra2.rect = (SDL_Rect) {580,87,580,272};
+	barra2.rect = (SDL_Rect) {580,87,580,185};
 	barra2.texture = IMG_LoadTexture(ren, "barra.png");
-	barra2.state = semuso;
-	barra2.bola.rect = (SDL_Rect) {400, 300, 40,40};
+	barra2.state = off;
+	barra2.bola.rect = (SDL_Rect) {570, 150, 40,40};
 	barra2.bola.texture = IMG_LoadTexture(ren, "bola.png");
 		
 	//cria bola
@@ -80,7 +82,6 @@ void rodaJogo(SDL_Renderer* ren, bool *menu, bool *running, bool *gameIsRunning)
 	SDL_Texture* imgbola = IMG_LoadTexture(ren, "bola.png");
 	bool selecionado = false;
 	
-	bool isCounting = true;
 	bool isCountingY = true;
 	SDL_Point mouse = {0,0};
 	int espera = 200;
@@ -91,15 +92,18 @@ void rodaJogo(SDL_Renderer* ren, bool *menu, bool *running, bool *gameIsRunning)
 	Uint32 antes = 0;
 	short int cont;
     /* EXECUÇÃO */
-	SDL_Rect rB = {x3, y3, 40,40};
-	
-	SDL_Rect rBY = {520,50, 40,40};
+    
+	SDL_Rect rBX = {x3, y3, 40,40}; // Bola Eixo X
+	SDL_Rect rBY = {520,50, 40,40}; // Bola Eixo Y
 	
 	assert(img != NULL);	
-	assert(imgbola != NULL);	
+	assert(imgbola != NULL);
+		
 	int contadorX = 140;
-	int contadorY = 600;
+	int contadorY = 87;
+	
 	short int bolaaux = 1;
+	short int bolaauxY = 1;
 	
 	while(*running){
 			espera = MAX(espera - (int)(SDL_GetTicks() - antes), 0);
@@ -113,6 +117,7 @@ void rodaJogo(SDL_Renderer* ren, bool *menu, bool *running, bool *gameIsRunning)
 			
 			SDL_RenderCopy(ren, goleiro.texture, &goleiro.corte, &goleiro.rect);
 			SDL_RenderCopy(ren, barra1.bola.texture, NULL, &barra1.bola.rect);// BOLA X
+			SDL_RenderCopy(ren, barra2.bola.texture, NULL, &barra2.bola.rect);// BOLA X
 			SDL_RenderCopy(ren, imgbola, NULL, &rBY); //BOLA Y
 					
 			
@@ -144,38 +149,48 @@ void rodaJogo(SDL_Renderer* ren, bool *menu, bool *running, bool *gameIsRunning)
 							SDL_GetMouseState(&mouse.x, &mouse.y);
 							if(evt.button.button == SDL_BUTTON_LEFT){
 								if(evt.button.state==SDL_RELEASED){
-									selecionado = false;
-									isCounting = false;
+									selecionado = false;	
 									
-									rB.x = contadorX;
+									if(barra2.state == on) barra2.state = off;	
+											
+								 	if(barra1.state == on){
+								 		barra1.state = off;
+								 		barra2.state = on;
+								 	}
+									if(goleiro.state == agarrando) {
+										goleiro.state = esperando;
+										goleiro.rect.x = 150;
+										goleiro.rect.y = 100;
+									}
+									rBX.x = contadorX;
 									
-									if(rB.x>=11 && rB.x<=170 && rB.y>=66 && rB.y<=152){
+									if(rBX.x>=11 && rBX.x<=170 && rBX.y>=66 && rBX.y<=152){
 										printf("\nEspaco A!");
 										statusBall = 1;
 										break;
 									}
-									else if(rB.x>=171 && rB.x <= 330 && rB.y>= 66 && rB.y<= 152){
+									else if(rBX.x>=171 && rBX.x <= 330 && rBX.y>= 66 && rBX.y<= 152){
 										printf("\nEspaco B!");
 										statusBall = 2;
 										break;
 									}
-									else if(rB.x>=331 && rB.x<=491 && rB.y>=66 && rB.y<=152){
+									else if(rBX.x>=331 && rBX.x<=491 && rBX.y>=66 && rBX.y<=152){
 										printf("\nEspaco C!");
 										statusBall = 3;
 										break;
 									}
 
-									else if(rB.x>=11 && rB.x<=170 && rB.y>=152 && rB.y<=238){
+									else if(rBX.x>=11 && rBX.x<=170 && rBX.y>=152 && rBX.y<=238){
 										printf("\nEspaco D!");
 										statusBall = 4;
 										break;
 									}
-									else if(rB.x>=171 && rB.x <= 330 && rB.y>= 152 && rB.y<= 238){
+									else if(rBX.x>=171 && rBX.x <= 330 && rBX.y>= 152 && rBX.y<= 238){
 										printf("\nEspaco E!");
 										statusBall = 5;
 										break;
 									}
-									else if(rB.x>=331 && rB.x<=491 && rB.y>=152 && rB.y<=238){
+									else if(rBX.x>=331 && rBX.x<=491 && rBX.y>=152 && rBX.y<=238){
 										printf("\nEspaco F!");
 										statusBall = 6;
 										break;
@@ -190,9 +205,9 @@ void rodaJogo(SDL_Renderer* ren, bool *menu, bool *running, bool *gameIsRunning)
 							}
 						case SDL_MOUSEMOTION:
 							SDL_GetMouseState(&mouse.x, &mouse.y);
-							if(SDL_PointInRect(&mouse,&rB) && selecionado){
-								rB.x=mouse.x+dx;
-								rB.y=mouse.y+dy;
+							if(SDL_PointInRect(&mouse,&rBX) && selecionado){
+								rBX.x=mouse.x+dx;
+								rBX.y=mouse.y+dy;
 							
 							}	
 							break;
@@ -207,20 +222,32 @@ void rodaJogo(SDL_Renderer* ren, bool *menu, bool *running, bool *gameIsRunning)
 			}
 			else{
 
-				if(isCounting){
-					contadorX += 5 * bolaaux;
-			  		printf("\n %d ", contadorX);
-			   		if(contadorX >= 330 || contadorX <= 140) bolaaux *= -1;
-			   		barra1.bola.rect.x = contadorX;
-			   					   		
+				if(barra1.state == on){
+					barra1.bola.rect.x += 5 * bolaaux;
+
+			   		if(barra1.bola.rect.x >= 330 || barra1.bola.rect.x <= 140) {
+		   				bolaaux *= -1;
+				  		printf("\n %d ", barra1.bola.rect.x); 
+					}
+			   		//barra1.bola.rect.x = contadorX;				   		
 		   		}	
+		   		
+		   		if(barra2.state == on){
+		   			barra2.bola.rect.y += 5 * bolaauxY;
+		   			if(barra2.bola.rect.y >= (272 - barra2.bola.rect.h)   || barra2.bola.rect.y <= 87) {
+		   				printf("\n yyyyyyyyyy %d", barra2.bola.rect.y);
+		   				bolaauxY *= -1;
+		   			}
+		   			//barra2.bola.rect.y = contadorY;
+		   		}
+		   		
 		   		if(goleiro.aux == 30 && goleiro.state == esperando){
 					switch(isMoving){
 						case 1:
-							goleiro.corte = (SDL_Rect) {0,0,100,150};
+							goleiro.corte = (SDL_Rect) {0,0,200,170};
 							break;
 						case 2:
-							goleiro.corte = (SDL_Rect) {100,0,100,150};
+							goleiro.corte = (SDL_Rect) {200,0,200,170};
 							break;
 						default:
 							isMoving = 0;
@@ -228,11 +255,82 @@ void rodaJogo(SDL_Renderer* ren, bool *menu, bool *running, bool *gameIsRunning)
 					}isMoving++;
 					goleiro.aux = 0;
 				}
+				if(goleiro.state == agarrando && goleiro.aux == 5){
+					goleiro.aux = 0;
+					//caminho do goleiro
+					
+					switch(goleiro.pos){
+						case 0:
+							if(goleiro.rect.y >= 90) goleiro.rect.y -= 5;
+							break;
+						case 1: //Agarrando meio cima
+							if(goleiro.rect.y >= 50) goleiro.rect.y -= 5;
+							break;
+						case 2: //Angulo direito
+							if(goleiro.rect.x <= 300) goleiro.rect.x += 6;
+							if(goleiro.rect.y >= 50) goleiro.rect.y -= 2;
+							break;
+						case 3: //Angulo esquerdo
+							if(goleiro.rect.x >= 0) goleiro.rect.x -= 6;
+							if(goleiro.rect.y >= 50) goleiro.rect.y -= 2;
+							break;
+						case 4: //Canto direito	
+							if(goleiro.rect.x >= 0) goleiro.rect.x += 5;
+							break;
+						case 5: //Canto esquerdo
+							if(goleiro.rect.x <= 350) goleiro.rect.x -= 5;
+							
+							break;
+							
+					}
+				}	
 				(goleiro.aux)++;
-			espera = 20;
+				espera = 20;
 			
 			}
-		
+		if(goleiro.state == esperando && barra1.state == off && barra2.state == off ){
+			goleiro.state = agarrando;
+			goleiro.aux = 0;
+			goleiro.pos = rand() % 6;
+			
+			printf("\ngoleiro.pos = %d\n",goleiro.pos);
+			
+			if(goleiro.pos == 0) goleiro.corte = (SDL_Rect) {0,170,200,170};
+			else if(goleiro.pos == 1) goleiro.corte = (SDL_Rect) {200,170,200,170};
+			else if(goleiro.pos == 2) goleiro.corte = (SDL_Rect) {0,340,200,170};
+			else if(goleiro.pos == 3) goleiro.corte = (SDL_Rect) {200,340,200,170};
+			else if(goleiro.pos == 4) goleiro.corte = (SDL_Rect) {0,510,200,170};
+			else if(goleiro.pos == 5) goleiro.corte = (SDL_Rect) {200,510,200,170};			
+			
+/*			if(goleiro.pos >= 0 && goleiro.pos <= 10) goleiro.corte = (SDL_Rect) {0,170,200,170};
+			else if(goleiro.pos > 10 && goleiro.pos <= 20) goleiro.corte = (SDL_Rect) {200,170,200,170};
+			else if(goleiro.pos > 20 && goleiro.pos <= 30) goleiro.corte = (SDL_Rect) {0,340,200,170};
+			else if(goleiro.pos > 30 && goleiro.pos <= 40) goleiro.corte = (SDL_Rect) {200,340,200,170};
+			else if(goleiro.pos > 40 && goleiro.pos <= 50) goleiro.corte = (SDL_Rect) {0,510,200,170};
+			else if(goleiro.pos > 50 && goleiro.pos <= 60) goleiro.corte = (SDL_Rect) {200,510,200,170};*/
+			
+			
+			/*switch(goleiro.pos){
+				case 0: 
+					goleiro.corte = (SDL_Rect) {0,170,200,170};
+					break;
+				case 1:
+					goleiro.corte = (SDL_Rect) {200,170,200,170};
+					break;
+				case 2:
+					goleiro.corte = (SDL_Rect) {0,340,200,170};
+					break;
+				case 3:
+					goleiro.corte = (SDL_Rect) {200,340,200,170};
+					break;
+				case 4:
+					goleiro.corte = (SDL_Rect) {0,510,200,170};
+					break;
+				case 5:
+					goleiro.corte = (SDL_Rect) {200,510,200,170};
+					break;
+			}*/
+		}
 	}
 	SDL_DestroyTexture(img);
  	SDL_DestroyTexture(imgbola);
@@ -386,4 +484,3 @@ int main (int argc, char* args[])
     SDL_DestroyWindow(win);
     SDL_Quit();
 }
-	
