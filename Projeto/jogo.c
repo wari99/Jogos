@@ -12,6 +12,14 @@
 enum estadoGoleiro {esperando = 0, agarrando};
 enum estadoBola {parada = 0, girando};
 enum estadoBarra {off = 0, on};
+enum estadoTorcida {up = 0, down};
+
+typedef struct dadosTorcida{
+	SDL_Rect rect;
+	SDL_Rect corte;
+	SDL_Texture* texture;
+	unsigned short int state;
+}dadosTorcida;
 
 typedef struct dadosGoleiro{
 	SDL_Rect rect;
@@ -51,6 +59,11 @@ void mudaCor(SDL_Renderer* ren,SDL_Surface* listaS[],SDL_Texture* listaT[],SDL_C
 }
 
 void rodaJogo(SDL_Renderer* ren, bool *menu, bool *running, bool *gameIsRunning){
+	//cria torcida
+	dadosTorcida torcida;
+	
+
+
 	//cria goleiro
 	dadosGoleiro goleiro;
 	goleiro.rect = (SDL_Rect) {150, 100, 200,170};
@@ -275,10 +288,12 @@ void rodaJogo(SDL_Renderer* ren, bool *menu, bool *running, bool *gameIsRunning)
 							if(goleiro.rect.y >= 50) goleiro.rect.y -= 2;
 							break;
 						case 4: //Canto direito	
-							if(goleiro.rect.x >= 0) goleiro.rect.x += 5;
+							if(goleiro.rect.x <= 300) goleiro.rect.x += 6;
+							if(goleiro.rect.y >= 70) goleiro.rect.y -= 1;
 							break;
 						case 5: //Canto esquerdo
-							if(goleiro.rect.x <= 350) goleiro.rect.x -= 5;
+							if(goleiro.rect.x <= 300) goleiro.rect.x -= 5;
+							if(goleiro.rect.y >= 70) goleiro.rect.y -= 1;
 							
 							break;
 							
@@ -484,3 +499,4 @@ int main (int argc, char* args[])
     SDL_DestroyWindow(win);
     SDL_Quit();
 }
+	
