@@ -15,10 +15,9 @@ enum estadoBarra {off = 0, on};
 enum estadoTorcida {up = 0, down};
 
 typedef struct dadosTorcida{
-	SDL_Rect rect;
-	SDL_Rect corte;
 	SDL_Texture* texture;
 	unsigned short int state;
+	int aux;
 }dadosTorcida;
 
 typedef struct dadosGoleiro{
@@ -61,9 +60,9 @@ void mudaCor(SDL_Renderer* ren,SDL_Surface* listaS[],SDL_Texture* listaT[],SDL_C
 void rodaJogo(SDL_Renderer* ren, bool *menu, bool *running, bool *gameIsRunning){
 	//cria torcida
 	dadosTorcida torcida;
-	
-
-
+	torcida.texture = IMG_LoadTexture(ren, "torcidaarquibancada1.png");
+	torcida.state = up;
+	torcida.aux = 0;
 	//cria goleiro
 	dadosGoleiro goleiro;
 	goleiro.rect = (SDL_Rect) {150, 100, 200,170};
@@ -74,7 +73,7 @@ void rodaJogo(SDL_Renderer* ren, bool *menu, bool *running, bool *gameIsRunning)
 
 	//cria barra1
 	dadosBarra barra1;
-	barra1.rect = (SDL_Rect) {156,318,186,30};
+	barra1.rect = (SDL_Rect) {156,250,200,140};
 	barra1.texture = IMG_LoadTexture(ren, "barra.png");
 	barra1.state = on;
 	barra1.bola.rect = (SDL_Rect) {200, 300, 40,40};
@@ -82,17 +81,19 @@ void rodaJogo(SDL_Renderer* ren, bool *menu, bool *running, bool *gameIsRunning)
 	
 	//cria barra2
 	dadosBarra barra2;
-	barra2.rect = (SDL_Rect) {580,87,580,185};
-	barra2.texture = IMG_LoadTexture(ren, "barra.png");
+	barra2.rect = (SDL_Rect) {515,87,140,200};
+	barra2.texture = IMG_LoadTexture(ren, "barra2.png");
 	barra2.state = off;
 	barra2.bola.rect = (SDL_Rect) {570, 150, 40,40};
 	barra2.bola.texture = IMG_LoadTexture(ren, "bola.png");
 		
 	//cria bola
 	dadosBola bola;
-	
-	SDL_Texture* img = IMG_LoadTexture(ren, "novogol.png");
+	SDL_Texture* img = IMG_LoadTexture(ren, "golpngetal.png");
 	SDL_Texture* imgbola = IMG_LoadTexture(ren, "bola.png");
+	
+	//cria torcida
+	
 	bool selecionado = false;
 	
 	bool isCountingY = true;
@@ -121,17 +122,19 @@ void rodaJogo(SDL_Renderer* ren, bool *menu, bool *running, bool *gameIsRunning)
 	while(*running){
 			espera = MAX(espera - (int)(SDL_GetTicks() - antes), 0);
 		  	SDL_Event evt; 
-
+			if(torcida.state == up) torcida.texture = IMG_LoadTexture(ren, "torcidaarquibancada1.png");
+			else torcida.texture = IMG_LoadTexture(ren, "torcidaarquibancada2.png");
 		  	antes = SDL_GetTicks();
 			SDL_SetRenderDrawColor(ren, 0xFF, 0xFF, 0xFF, 0x00);
 			SDL_RenderClear(ren);
-
+			SDL_RenderCopy(ren, torcida.texture, NULL, NULL);//FUNDO DE TELA
 			SDL_RenderCopy(ren, img, NULL, NULL);//FUNDO DE TELA
 			
 			SDL_RenderCopy(ren, goleiro.texture, &goleiro.corte, &goleiro.rect);
+			SDL_RenderCopy(ren, barra1.texture, NULL, &barra1.rect);// BOLA X
+			SDL_RenderCopy(ren, barra2.texture, NULL, &barra2.rect);// BOLA X
 			SDL_RenderCopy(ren, barra1.bola.texture, NULL, &barra1.bola.rect);// BOLA X
 			SDL_RenderCopy(ren, barra2.bola.texture, NULL, &barra2.bola.rect);// BOLA X
-			SDL_RenderCopy(ren, imgbola, NULL, &rBY); //BOLA Y
 					
 			
 			SDL_RenderPresent(ren);
@@ -300,6 +303,17 @@ void rodaJogo(SDL_Renderer* ren, bool *menu, bool *running, bool *gameIsRunning)
 					}
 				}	
 				(goleiro.aux)++;
+				
+				if(torcida.aux == 15){			
+					if(torcida.state == down) {
+						torcida.state = up;
+					}
+					else {
+						torcida.state = down;
+					}
+					torcida.aux = 0;
+				}
+				(torcida.aux)++;
 				espera = 20;
 			
 			}
@@ -316,35 +330,6 @@ void rodaJogo(SDL_Renderer* ren, bool *menu, bool *running, bool *gameIsRunning)
 			else if(goleiro.pos == 3) goleiro.corte = (SDL_Rect) {200,340,200,170};
 			else if(goleiro.pos == 4) goleiro.corte = (SDL_Rect) {0,510,200,170};
 			else if(goleiro.pos == 5) goleiro.corte = (SDL_Rect) {200,510,200,170};			
-			
-/*			if(goleiro.pos >= 0 && goleiro.pos <= 10) goleiro.corte = (SDL_Rect) {0,170,200,170};
-			else if(goleiro.pos > 10 && goleiro.pos <= 20) goleiro.corte = (SDL_Rect) {200,170,200,170};
-			else if(goleiro.pos > 20 && goleiro.pos <= 30) goleiro.corte = (SDL_Rect) {0,340,200,170};
-			else if(goleiro.pos > 30 && goleiro.pos <= 40) goleiro.corte = (SDL_Rect) {200,340,200,170};
-			else if(goleiro.pos > 40 && goleiro.pos <= 50) goleiro.corte = (SDL_Rect) {0,510,200,170};
-			else if(goleiro.pos > 50 && goleiro.pos <= 60) goleiro.corte = (SDL_Rect) {200,510,200,170};*/
-			
-			
-			/*switch(goleiro.pos){
-				case 0: 
-					goleiro.corte = (SDL_Rect) {0,170,200,170};
-					break;
-				case 1:
-					goleiro.corte = (SDL_Rect) {200,170,200,170};
-					break;
-				case 2:
-					goleiro.corte = (SDL_Rect) {0,340,200,170};
-					break;
-				case 3:
-					goleiro.corte = (SDL_Rect) {200,340,200,170};
-					break;
-				case 4:
-					goleiro.corte = (SDL_Rect) {0,510,200,170};
-					break;
-				case 5:
-					goleiro.corte = (SDL_Rect) {200,510,200,170};
-					break;
-			}*/
 		}
 	}
 	SDL_DestroyTexture(img);
@@ -355,9 +340,13 @@ void rodaJogo(SDL_Renderer* ren, bool *menu, bool *running, bool *gameIsRunning)
 void chamaMenu(SDL_Renderer* ren, bool *menu, bool *running, bool *gameIsRunning){
     TTF_Init();
     SDL_Color padrao = { 0,0,0,255 };
+    
     //SDL_Color focus = { 228,232,112,255 };
+    
     SDL_Color focus = { 255,255,255,255 };
+    
     //TTF_Font *ourFont = TTF_OpenFont("Gameshow.ttf",100);
+    
     TTF_Font *ourFont = TTF_OpenFont("Mont-HeavyDEMO.otf",100);
     struct SDL_Surface* listaSurfaceText[3];
     listaSurfaceText[0] = TTF_RenderText_Solid(ourFont, "Play",padrao);  
@@ -372,9 +361,9 @@ void chamaMenu(SDL_Renderer* ren, bool *menu, bool *running, bool *gameIsRunning
     
     int i;
     SDL_Point mouse = {0,0};
-    SDL_Rect recPlay = {110,210,100,30};
-    SDL_Rect recAbout = {220,210,100,30};
-    SDL_Rect recQuit = {330,210,100,30};
+    SDL_Rect recPlay = {200,210,100,30};
+    SDL_Rect recAbout = {310,210,100,30};
+    SDL_Rect recQuit = {420,210,100,30};
     
     bool selecionado = false;
     
