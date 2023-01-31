@@ -160,7 +160,6 @@ void rodaJogo(SDL_Renderer* ren, bool *menu, bool *running, bool *gameIsRunning)
 							}*/
 						}
 						break;
-					//case SDL_MOUSEBUTTONUP: acao goleiro random number + mov bola
 						case SDL_MOUSEBUTTONUP:
 							SDL_GetMouseState(&mouse.x, &mouse.y);
 							if(evt.button.button == SDL_BUTTON_LEFT){
@@ -277,26 +276,26 @@ void rodaJogo(SDL_Renderer* ren, bool *menu, bool *running, bool *gameIsRunning)
 					
 					switch(goleiro.pos){
 						case 0:
-							if(goleiro.rect.y >= 90) goleiro.rect.y -= 5;
+							if(goleiro.rect.y >= 90) goleiro.rect.y -= 12;
 							break;
 						case 1: //Agarrando meio cima
-							if(goleiro.rect.y >= 50) goleiro.rect.y -= 5;
+							if(goleiro.rect.y >= 50) goleiro.rect.y -= 12;
 							break;
 						case 2: //Angulo direito
-							if(goleiro.rect.x <= 300) goleiro.rect.x += 6;
-							if(goleiro.rect.y >= 50) goleiro.rect.y -= 2;
+							if(goleiro.rect.x <= 300) goleiro.rect.x += 16;
+							if(goleiro.rect.y >= 50) goleiro.rect.y -= 6;
 							break;
 						case 3: //Angulo esquerdo
-							if(goleiro.rect.x >= 0) goleiro.rect.x -= 6;
-							if(goleiro.rect.y >= 50) goleiro.rect.y -= 2;
+							if(goleiro.rect.x >= 0) goleiro.rect.x -= 16;
+							if(goleiro.rect.y >= 50) goleiro.rect.y -= 6;
 							break;
 						case 4: //Canto direito	
-							if(goleiro.rect.x <= 300) goleiro.rect.x += 6;
-							if(goleiro.rect.y >= 70) goleiro.rect.y -= 1;
+							if(goleiro.rect.x <= 300) goleiro.rect.x += 16;
+							if(goleiro.rect.y >= 70) goleiro.rect.y -= 4;
 							break;
 						case 5: //Canto esquerdo
-							if(goleiro.rect.x <= 300) goleiro.rect.x -= 5;
-							if(goleiro.rect.y >= 70) goleiro.rect.y -= 1;
+							if(goleiro.rect.x >= 0) goleiro.rect.x -= 15;
+							if(goleiro.rect.y >= 70) goleiro.rect.y -= 3;
 							
 							break;
 							
@@ -488,4 +487,3 @@ int main (int argc, char* args[])
     SDL_DestroyWindow(win);
     SDL_Quit();
 }
-	
