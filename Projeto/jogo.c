@@ -116,6 +116,8 @@ void rodaJogo(SDL_Renderer* ren, bool *menu, bool *running, bool *gameIsRunning)
 	int contadorX = 140;
 	int contadorY = 87;
 	
+	int valorX = 0;
+	int valorY = 0;
 	short int bolaaux = 1;
 	short int bolaauxY = 1;
 	
@@ -148,7 +150,6 @@ void rodaJogo(SDL_Renderer* ren, bool *menu, bool *running, bool *gameIsRunning)
 							*menu = false;
 						} break;	
 					case SDL_MOUSEBUTTONDOWN:
-						//isCounting = false;
 						if(evt.button.button == SDL_BUTTON_LEFT){
 							SDL_GetMouseState(&mouse.x, &mouse.y);
 		    				
@@ -164,7 +165,7 @@ void rodaJogo(SDL_Renderer* ren, bool *menu, bool *running, bool *gameIsRunning)
 							SDL_GetMouseState(&mouse.x, &mouse.y);
 							if(evt.button.button == SDL_BUTTON_LEFT){
 								if(evt.button.state==SDL_RELEASED){
-									selecionado = false;	
+									//selecionado = false;	
 									
 									if(barra2.state == on) barra2.state = off;	
 											
@@ -249,7 +250,7 @@ void rodaJogo(SDL_Renderer* ren, bool *menu, bool *running, bool *gameIsRunning)
 		   		
 		   		if(barra2.state == on){
 		   			barra2.bola.rect.y += 5 * bolaauxY;
-		   			if(barra2.bola.rect.y >= (272 - barra2.bola.rect.h)   || barra2.bola.rect.y <= 87) {
+		   			if(barra2.bola.rect.y >= (300 - barra2.bola.rect.h)   || barra2.bola.rect.y <= 87) {
 		   				printf("\n yyyyyyyyyy %d", barra2.bola.rect.y);
 		   				bolaauxY *= -1;
 		   			}
@@ -270,39 +271,41 @@ void rodaJogo(SDL_Renderer* ren, bool *menu, bool *running, bool *gameIsRunning)
 					}isMoving++;
 					goleiro.aux = 0;
 				}
-				if(goleiro.state == agarrando && goleiro.aux == 5){
+				if(goleiro.state == agarrando && goleiro.aux == 2){
 					goleiro.aux = 0;
 					//caminho do goleiro
 					
 					switch(goleiro.pos){
 						case 0:
-							if(goleiro.rect.y >= 90) goleiro.rect.y -= 12;
+							if(goleiro.rect.y >= 90) goleiro.rect.y -= 9;
 							break;
 						case 1: //Agarrando meio cima
-							if(goleiro.rect.y >= 50) goleiro.rect.y -= 12;
+							if(goleiro.rect.y >= 50) goleiro.rect.y -= 9;
 							break;
 						case 2: //Angulo direito
-							if(goleiro.rect.x <= 300) goleiro.rect.x += 16;
+							if(goleiro.rect.x <= 300) goleiro.rect.x += 15;
 							if(goleiro.rect.y >= 50) goleiro.rect.y -= 6;
 							break;
 						case 3: //Angulo esquerdo
-							if(goleiro.rect.x >= 0) goleiro.rect.x -= 16;
+							if(goleiro.rect.x >= 0) goleiro.rect.x -= 15;
 							if(goleiro.rect.y >= 50) goleiro.rect.y -= 6;
 							break;
 						case 4: //Canto direito	
-							if(goleiro.rect.x <= 300) goleiro.rect.x += 16;
-							if(goleiro.rect.y >= 70) goleiro.rect.y -= 4;
+							if(goleiro.rect.x <= 280) goleiro.rect.x += 15;
+							if(goleiro.rect.y >= 70) goleiro.rect.y -= 6;
 							break;
 						case 5: //Canto esquerdo
-							if(goleiro.rect.x >= 0) goleiro.rect.x -= 15;
-							if(goleiro.rect.y >= 70) goleiro.rect.y -= 3;
+							if(goleiro.rect.x >= 10) goleiro.rect.x -= 15;
+							if(goleiro.rect.y >= 70) goleiro.rect.y -= 6;
 							
 							break;
 							
 					}
 				}	
 				(goleiro.aux)++;
-				
+
+
+
 				if(torcida.aux == 15){			
 					if(torcida.state == down) {
 						torcida.state = up;
@@ -439,7 +442,7 @@ void chamaMenu(SDL_Renderer* ren, bool *menu, bool *running, bool *gameIsRunning
 }
 
 SDL_Window* create_window(void) {
-    SDL_Window* win = SDL_CreateWindow("ProjetoP2",
+    SDL_Window* win = SDL_CreateWindow("Soccer Shootouts",
                          SDL_WINDOWPOS_UNDEFINED,
                          SDL_WINDOWPOS_UNDEFINED,
                          700, 350, SDL_WINDOW_SHOWN
@@ -487,3 +490,4 @@ int main (int argc, char* args[])
     SDL_DestroyWindow(win);
     SDL_Quit();
 }
+	
