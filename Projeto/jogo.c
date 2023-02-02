@@ -152,13 +152,6 @@ void rodaJogo(SDL_Renderer* ren, bool *menu, bool *running, bool *gameIsRunning)
 					case SDL_MOUSEBUTTONDOWN:
 						if(evt.button.button == SDL_BUTTON_LEFT){
 							SDL_GetMouseState(&mouse.x, &mouse.y);
-		    				
-							/*if(SDL_PointInRect(&mouse,&rB)) {
-								dx=rB.x-mouse.x;
-								dy=rB.y-mouse.y;
-								selecionado = true;	
-								printf("\nBola clicada");
-							}*/
 						}
 						break;
 						case SDL_MOUSEBUTTONUP:
@@ -284,19 +277,19 @@ void rodaJogo(SDL_Renderer* ren, bool *menu, bool *running, bool *gameIsRunning)
 							break;
 						case 2: //Angulo direito
 							if(goleiro.rect.x <= 300) goleiro.rect.x += 15;
-							if(goleiro.rect.y >= 50) goleiro.rect.y -= 6;
+							if(goleiro.rect.y >= 50) goleiro.rect.y -= 5;
 							break;
 						case 3: //Angulo esquerdo
 							if(goleiro.rect.x >= 0) goleiro.rect.x -= 15;
-							if(goleiro.rect.y >= 50) goleiro.rect.y -= 6;
+							if(goleiro.rect.y >= 50) goleiro.rect.y -= 5;
 							break;
 						case 4: //Canto direito	
 							if(goleiro.rect.x <= 280) goleiro.rect.x += 15;
-							if(goleiro.rect.y >= 70) goleiro.rect.y -= 6;
+							if(goleiro.rect.y >= 70) goleiro.rect.y -= 4;
 							break;
 						case 5: //Canto esquerdo
 							if(goleiro.rect.x >= 10) goleiro.rect.x -= 15;
-							if(goleiro.rect.y >= 70) goleiro.rect.y -= 6;
+							if(goleiro.rect.y >= 70) goleiro.rect.y -= 4;
 							
 							break;
 							
@@ -355,7 +348,7 @@ void chamaMenu(SDL_Renderer* ren, bool *menu, bool *running, bool *gameIsRunning
     listaSurfaceText[1] = TTF_RenderText_Solid(ourFont, "About",padrao); 
     listaSurfaceText[2] = TTF_RenderText_Solid(ourFont, "Quit",padrao); 
 
- 	SDL_Texture* bgmenu = IMG_LoadTexture(ren, "niltonsantosalvinegro.jpg");
+ 	SDL_Texture* bgmenu = IMG_LoadTexture(ren, "menufundo.png");
     struct SDL_Texture* listaTextureText[3];
 	listaTextureText[0] = SDL_CreateTextureFromSurface(ren,listaSurfaceText[0]);
     listaTextureText[1] = SDL_CreateTextureFromSurface(ren,listaSurfaceText[1]);
@@ -442,7 +435,7 @@ void chamaMenu(SDL_Renderer* ren, bool *menu, bool *running, bool *gameIsRunning
 }
 
 SDL_Window* create_window(void) {
-    SDL_Window* win = SDL_CreateWindow("Soccer Shootouts",
+    SDL_Window* win = SDL_CreateWindow("Soccer: Match Decider",
                          SDL_WINDOWPOS_UNDEFINED,
                          SDL_WINDOWPOS_UNDEFINED,
                          700, 350, SDL_WINDOW_SHOWN
