@@ -10,9 +10,10 @@
 #define MAX(x,y) (((x) > (y)) ? (x) : (y))
 
 enum estadoGoleiro {esperando = 0, agarrando};
-enum estadoBola {parada = 0, girando};
+enum estadoBola {parada = 0, girando, aparece, desaparece};
 enum estadoBarra {off = 0, on};
 enum estadoTorcida {up = 0, down};
+enum estadoPlayer {batedor = 0, goleiro, aguardando};
 
 typedef struct dadosTorcida{
 	SDL_Texture* texture;
@@ -137,8 +138,7 @@ void rodaJogo(SDL_Renderer* ren, bool *menu, bool *running, bool *gameIsRunning)
 			SDL_RenderCopy(ren, barra2.texture, NULL, &barra2.rect);// BOLA X
 			SDL_RenderCopy(ren, barra1.bola.texture, NULL, &barra1.bola.rect);// BOLA X
 			SDL_RenderCopy(ren, barra2.bola.texture, NULL, &barra2.bola.rect);// BOLA X
-					
-			
+						
 			SDL_RenderPresent(ren);
 		  	int isevt = AUX_WaitEventTimeoutCount(&evt,&espera);    
 		    if(isevt){ 	
@@ -157,9 +157,7 @@ void rodaJogo(SDL_Renderer* ren, bool *menu, bool *running, bool *gameIsRunning)
 						case SDL_MOUSEBUTTONUP:
 							SDL_GetMouseState(&mouse.x, &mouse.y);
 							if(evt.button.button == SDL_BUTTON_LEFT){
-								if(evt.button.state==SDL_RELEASED){
-									//selecionado = false;	
-									
+								if(evt.button.state==SDL_RELEASED){									
 									if(barra2.state == on) barra2.state = off;	
 											
 								 	if(barra1.state == on){
@@ -212,14 +210,6 @@ void rodaJogo(SDL_Renderer* ren, bool *menu, bool *running, bool *gameIsRunning)
 									break;
 								}
 							}
-						case SDL_MOUSEMOTION:
-							SDL_GetMouseState(&mouse.x, &mouse.y);
-							if(SDL_PointInRect(&mouse,&rBX) && selecionado){
-								rBX.x=mouse.x+dx;
-								rBX.y=mouse.y+dy;
-							
-							}	
-							break;
 						case SDL_KEYDOWN:
 							if(evt.key.keysym.sym == SDLK_ESCAPE){
 								case SDLK_ESCAPE:
@@ -230,7 +220,6 @@ void rodaJogo(SDL_Renderer* ren, bool *menu, bool *running, bool *gameIsRunning)
 				}
 			}
 			else{
-
 				if(barra1.state == on){
 					barra1.bola.rect.x += 5 * bolaaux;
 
@@ -238,7 +227,6 @@ void rodaJogo(SDL_Renderer* ren, bool *menu, bool *running, bool *gameIsRunning)
 		   				bolaaux *= -1;
 				  		printf("\n %d ", barra1.bola.rect.x); 
 					}
-			   		//barra1.bola.rect.x = contadorX;				   		
 		   		}	
 		   		
 		   		if(barra2.state == on){
@@ -247,7 +235,6 @@ void rodaJogo(SDL_Renderer* ren, bool *menu, bool *running, bool *gameIsRunning)
 		   				printf("\n yyyyyyyyyy %d", barra2.bola.rect.y);
 		   				bolaauxY *= -1;
 		   			}
-		   			//barra2.bola.rect.y = contadorY;
 		   		}
 		   		
 		   		if(goleiro.aux == 30 && goleiro.state == esperando){
@@ -267,7 +254,6 @@ void rodaJogo(SDL_Renderer* ren, bool *menu, bool *running, bool *gameIsRunning)
 				if(goleiro.state == agarrando && goleiro.aux == 2){
 					goleiro.aux = 0;
 					//caminho do goleiro
-					
 					switch(goleiro.pos){
 						case 0:
 							if(goleiro.rect.y >= 90) goleiro.rect.y -= 9;
@@ -290,14 +276,10 @@ void rodaJogo(SDL_Renderer* ren, bool *menu, bool *running, bool *gameIsRunning)
 						case 5: //Canto esquerdo
 							if(goleiro.rect.x >= 10) goleiro.rect.x -= 15;
 							if(goleiro.rect.y >= 70) goleiro.rect.y -= 4;
-							
 							break;
-							
 					}
 				}	
 				(goleiro.aux)++;
-
-
 
 				if(torcida.aux == 15){			
 					if(torcida.state == down) {
@@ -324,9 +306,13 @@ void rodaJogo(SDL_Renderer* ren, bool *menu, bool *running, bool *gameIsRunning)
 			else if(goleiro.pos == 2) goleiro.corte = (SDL_Rect) {0,340,200,170};
 			else if(goleiro.pos == 3) goleiro.corte = (SDL_Rect) {200,340,200,170};
 			else if(goleiro.pos == 4) goleiro.corte = (SDL_Rect) {0,510,200,170};
-			else if(goleiro.pos == 5) goleiro.corte = (SDL_Rect) {200,510,200,170};			
+			else if(goleiro.pos == 5) goleiro.corte = (SDL_Rect) {200,510,200,170};	
+			
+			printf("BOLA EIXO X: %d, BOLA EIXO Y: %d", barra1.bola.rect.x, barra2.bola.rect.y);
+			
 		}
 	}
+
 	SDL_DestroyTexture(img);
  	SDL_DestroyTexture(imgbola);
 
@@ -335,12 +321,8 @@ void rodaJogo(SDL_Renderer* ren, bool *menu, bool *running, bool *gameIsRunning)
 void chamaMenu(SDL_Renderer* ren, bool *menu, bool *running, bool *gameIsRunning){
     TTF_Init();
     SDL_Color padrao = { 0,0,0,255 };
-    
-    //SDL_Color focus = { 228,232,112,255 };
-    
     SDL_Color focus = { 255,255,255,255 };
     
-    //TTF_Font *ourFont = TTF_OpenFont("Gameshow.ttf",100);
     
     TTF_Font *ourFont = TTF_OpenFont("Mont-HeavyDEMO.otf",100);
     struct SDL_Surface* listaSurfaceText[3];
@@ -459,9 +441,8 @@ SDL_Renderer* create_renderer(SDL_Window* win) {
 
     return ren;
 }
-//srand(time(NULL));
-int main (int argc, char* args[])
-{
+
+int main (int argc, char* args[]){
     /* INICIALIZACAO */
     SDL_Init(SDL_INIT_EVERYTHING);
     IMG_Init(0);
@@ -483,4 +464,3 @@ int main (int argc, char* args[])
     SDL_DestroyWindow(win);
     SDL_Quit();
 }
-
