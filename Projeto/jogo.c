@@ -315,11 +315,11 @@ void rodaJogo(SDL_Renderer* ren, bool *menu, bool *running, bool *gameIsRunning)
 							 		barra1.state = off;
 							 		barra2.state = on;
 							 	}
-								if(goleiro.state == agarrando) {
+								/*if(goleiro.state == agarrando) {
 									goleiro.state = esperando;
 									goleiro.rect.x = 350; //MUDEI
 									goleiro.rect.y = 190;
-								}
+								}*/
 								
 								if(player.state == vezGoleiro){
 									SDL_GetMouseState(&mouse.x, &mouse.y);
@@ -383,6 +383,7 @@ void rodaJogo(SDL_Renderer* ren, bool *menu, bool *running, bool *gameIsRunning)
 						bola.aux++;
 					}
 				}
+				
 				else if(player.state == aguardando){//ESPERANDO
 					aguardandoAux++;
 					if(aguardandoAux >= 100){
@@ -390,6 +391,7 @@ void rodaJogo(SDL_Renderer* ren, bool *menu, bool *running, bool *gameIsRunning)
 						bola.state = parada;
 						bola.rect.x = 420; //MUDEI
 						bola.rect.y = 300;
+						
 						goleiro.texture = IMG_LoadTexture(ren, "outrogoleiro200x170.png");
 						goleiro.corte = (SDL_Rect) {0,0,200,170};
 						goleiro.rect.x = 350; //MUDEI
@@ -412,10 +414,39 @@ void rodaJogo(SDL_Renderer* ren, bool *menu, bool *running, bool *gameIsRunning)
 					}isMoving++;
 					goleiro.aux = 0;
 				}
-				
-				if(goleiro.state == agarrando && goleiro.aux == 2){
+
+				if(goleiro.state == agarrando){
 					goleiro.aux = 0;
 					//caminho do goleiro
+					switch(goleiro.pos){ 
+						case 0: //Meio baixo
+							if(goleiro.rect.y >= 90) goleiro.rect.y -= 3;
+							break;
+						case 1: //Meio cima
+							if(goleiro.rect.y >= 50) goleiro.rect.y -= 3;
+							break;
+						case 2: //Angulo direito //MUDEI
+							if(goleiro.rect.x <= 500) goleiro.rect.x += 3;
+							if(goleiro.rect.y >= 50) goleiro.rect.y -= 1;
+							break;
+						case 3: //Angulo esquerdo //MUDEI
+							if(goleiro.rect.x >= 200) goleiro.rect.x -= 3;
+							if(goleiro.rect.y >= 50) goleiro.rect.y -= 1;
+							break;
+						case 4: //Canto direito	 //MUDEI
+							if(goleiro.rect.x <= 480) goleiro.rect.x += 3;
+							if(goleiro.rect.y >= 70) goleiro.rect.y -= 1;
+							break;
+						case 5: //Canto esquerdo //MUDEI
+							if(goleiro.rect.x >= 210) goleiro.rect.x -= 3;
+							if(goleiro.rect.y >= 70) goleiro.rect.y -= 1;
+							break;
+					}
+				}	
+				(goleiro.aux)++;
+				/*				
+				if(goleiro.state == agarrando && goleiro.aux == 2){
+					goleiro.aux = 0;
 					switch(goleiro.pos){ 
 						case 0: //Meio baixo
 							if(goleiro.rect.y >= 90) goleiro.rect.y -= 9;
@@ -441,7 +472,8 @@ void rodaJogo(SDL_Renderer* ren, bool *menu, bool *running, bool *gameIsRunning)
 							break;
 					}
 				}	
-				(goleiro.aux)++;
+				(goleiro.aux)++;*/
+				
 				/*if(torcida.aux == 15){			
 					if(torcida.state == down) {
 						torcida.state = up;
@@ -455,6 +487,7 @@ void rodaJogo(SDL_Renderer* ren, bool *menu, bool *running, bool *gameIsRunning)
 				espera = 20;
 			
 			}	
+	
 
 		if(goleiro.state == esperando && barra1.state == off && barra2.state == off && player.state == vezBatedor){
 			goleiro.state = agarrando;
@@ -473,6 +506,7 @@ void rodaJogo(SDL_Renderer* ren, bool *menu, bool *running, bool *gameIsRunning)
 			else if(goleiro.pos == 4) goleiro.corte = (SDL_Rect) {0,510,200,170};
 			else if(goleiro.pos == 5) goleiro.corte = (SDL_Rect) {200,510,200,170};	
 		}
+			
 	}
 	SDL_DestroyTexture(img);
  	SDL_DestroyTexture(imgbola);
