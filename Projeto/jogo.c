@@ -401,6 +401,7 @@ void rodaJogo(SDL_Renderer* ren, bool *menu, bool *running, bool *gameIsRunning)
 						goleiro.rect.x = 350; //MUDEI
 						goleiro.rect.y = 100;
 						goleiro.state = esperando;
+						
 					}
 				}
 				
@@ -433,7 +434,7 @@ void rodaJogo(SDL_Renderer* ren, bool *menu, bool *running, bool *gameIsRunning)
 						break;
 				}	
 				bola.aux++;
-									
+				
 				}
 				
 /*
