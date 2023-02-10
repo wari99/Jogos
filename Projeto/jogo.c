@@ -204,7 +204,7 @@ void rodaJogo(SDL_Renderer* ren, bool *menu, bool *running, bool *gameIsRunning)
 	int x,y,dx,dy; 
 	Uint32 antes = 0;
 	short int cont;
-	
+	unsigned short int posBola = 6;
 	unsigned int goalCountT1 = 0; 
 	unsigned int saveCountT1 = 0;
 	
@@ -275,7 +275,7 @@ void rodaJogo(SDL_Renderer* ren, bool *menu, bool *running, bool *gameIsRunning)
 			if(barra1.state != on){
 				SDL_RenderCopy(ren, bola.texture, NULL, &bola.rect);// BOLA do jogo
 			}
-			
+	
 			if(bola.aux == forca){	
 				forca = 0;		
 				calculaStatusBall(&statusBall, bola);
@@ -286,7 +286,9 @@ void rodaJogo(SDL_Renderer* ren, bool *menu, bool *running, bool *gameIsRunning)
 				else if((statusBall >= 0 && statusBall < 6) && statusBall != goleiro.pos ){
 					printf("Gol!!!");
 				}
-				else if(statusBall == 6) printf("Fora!!!");
+				else if(statusBall == 6){ 
+					printf("Fora!!!");
+				}
 				player.state = aguardando;
 			}
 			
@@ -326,6 +328,8 @@ void rodaJogo(SDL_Renderer* ren, bool *menu, bool *running, bool *gameIsRunning)
 									if(SDL_PointInRect(&mouse, &setor[setorAux]) && goleiro.state == esperando){
 										goleiro.state = agarrando;
 										goleiro.pos = setorAux;
+										posBola = rand() % 6;
+										printf("SetorAux = %d", setorAux);
 									}
 								}
 								break;
@@ -399,6 +403,45 @@ void rodaJogo(SDL_Renderer* ren, bool *menu, bool *running, bool *gameIsRunning)
 						goleiro.state = esperando;
 					}
 				}
+				
+				else if(player.state == vezGoleiro && goleiro.state == agarrando){
+				bola.state = girando;
+				
+				//unsigned short int posBola = rand() % 6;
+				switch(posBola){ // Indo para o mesmo lugar que o goleiro
+					case 0: //Meio baixo
+						if(bola.rect.y >= 165) bola.rect.y -= 3;
+						break;
+					case 1: //Meio cima
+						if(bola.rect.y >= 75) bola.rect.y -= 3;
+						break;
+					case 2: //Angulo Direito
+						if(bola.rect.x <= 640) bola.rect.x += 3;
+						if(bola.rect.y >= 78) bola.rect.y -= 3;
+						break;
+					case 3: //Angulo Esquerdo
+						if(bola.rect.x >= 270) bola.rect.x -= 2;
+						if(bola.rect.y >= 75) bola.rect.y -= 3;
+						break;					
+					case 4: //Canto Direito
+						if(bola.rect.x <= 640) bola.rect.x += 3;
+						if(bola.rect.y >= 160) bola.rect.y -= 2;
+						break;
+					case 5: //Canto Esquerdo
+						if(bola.rect.x >= 220) bola.rect.x -= 3;
+						if(bola.rect.y >= 170) bola.rect.y -= 2;
+						break;
+				}	
+				bola.aux++;
+									
+				}
+				
+/*
+		if(goleiro.state == esperando && barra1.state == off && barra2.state == off && player.state == vezBatedor){
+			goleiro.state = agarrando;
+			goleiro.aux = 0;
+			goleiro.pos = rand() % 6;		
+		}*/				
 				
 		   		if(goleiro.aux == 30 && goleiro.state == esperando){
 					switch(isMoving){ 
@@ -517,7 +560,6 @@ void chamaMenu(SDL_Renderer* ren, bool *menu, bool *running, bool *gameIsRunning
     TTF_Init();
     SDL_Color padrao = { 0,0,0,255 };
     SDL_Color focus = { 255,255,255,255 };
-    
     
     TTF_Font *ourFont = TTF_OpenFont("Mont-HeavyDEMO.otf",100);
     struct SDL_Surface* listaSurfaceText[3];
