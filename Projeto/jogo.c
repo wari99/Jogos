@@ -221,8 +221,9 @@ void rodaJogo(SDL_Renderer* ren, int *screen,int *vencedor){
 	bola.state = parada;
 	bola.aux = 0;
 	
-	SDL_Texture* img = IMG_LoadTexture(ren, "golpngetal.png");
-	SDL_Texture* imgbola = IMG_LoadTexture(ren, "bola.png");
+	SDL_Texture* imgGol = IMG_LoadTexture(ren, "golpngetal.png");
+	SDL_Texture* imgBola = IMG_LoadTexture(ren, "bola.png");
+	
 	//cria Player
 	dadosPlayer player;
 	player.state = vezBatedor;
@@ -252,8 +253,10 @@ void rodaJogo(SDL_Renderer* ren, int *screen,int *vencedor){
 	
     /* EXECUÇÃO */
     
-	assert(img != NULL);	
-	assert(imgbola != NULL);
+	assert(imgGol != NULL);	
+	assert(imgBola != NULL);
+
+				
 	int aguardandoAux = 1;
 	int contadorX = 140;
 	int contadorY = 87;
@@ -273,7 +276,7 @@ void rodaJogo(SDL_Renderer* ren, int *screen,int *vencedor){
 			SDL_SetRenderDrawColor(ren, 0xFF, 0xFF, 0xFF, 0x00);
 			SDL_RenderClear(ren);
 			SDL_RenderCopy(ren, torcida.texture, NULL, NULL);//FUNDO DE TELA
-			SDL_RenderCopy(ren, img, NULL, NULL);//FUNDO DE TELA
+			SDL_RenderCopy(ren, imgGol, NULL, NULL);//FUNDO DE TELA
             chamaPont(ren,pontuacao1);
 			chamaPont(ren,pontuacao2);
 	    	SDL_SetRenderDrawColor(ren, 0xFF, 0xFF, 0xFF,0x00);
@@ -492,7 +495,6 @@ void rodaJogo(SDL_Renderer* ren, int *screen,int *vencedor){
 						}
 						(pontuacao2.n)++;
 						goleiro.texture = IMG_LoadTexture(ren, "goleiros200x170.png");
-						//goleiro.texture = IMG_LoadTexture(ren, "quadrado.png");						
 						goleiro.corte = (SDL_Rect) {0,0,200,170};
 						goleiro.rect.x = 350; //MUDEI
 						goleiro.rect.y = 100;
@@ -582,8 +584,8 @@ void rodaJogo(SDL_Renderer* ren, int *screen,int *vencedor){
 		SDL_DestroyTexture(pontuacao1.vetPontos[i].img);
 		SDL_DestroyTexture(pontuacao2.vetPontos[i].img);
 	}
-	SDL_DestroyTexture(img);
- 	SDL_DestroyTexture(imgbola);
+	SDL_DestroyTexture(imgGol);
+ 	SDL_DestroyTexture(imgBola);
 
 }
 
