@@ -190,15 +190,13 @@ void rodaJogo(SDL_Renderer* ren, int *screen,int *vencedor){
 	torcida.aux = 0;
 	//cria goleiro
 	dadosGoleiro goleiro;
-	//goleiro.rect = (SDL_Rect) {350, 190, 160,86}; //MUDEI
 	goleiro.rect = (SDL_Rect) {350, 100, 200,170}; //MUDEI
 	goleiro.corte = (SDL_Rect) {0,0,200,170};
-	//goleiro.texture = IMG_LoadTexture(ren, "gordogoleiros200x170.png");
-	goleiro.texture = IMG_LoadTexture(ren, "goleiros200x170.png");
+	goleiro.texture = IMG_LoadTexture(ren, "goleiros200x170.png");	
+	//goleiro.texture = IMG_LoadTexture(ren, "quadrado.png");
 	goleiro.state = esperando;
 	goleiro.aux = 0;
 	
-	//if(vezGoleiro) goleiro.texture = IMG_LoadTexture(ren, "outrogoleiro200x170.png");
 
 	//cria barra1
 	dadosBarra barra1;
@@ -245,7 +243,8 @@ void rodaJogo(SDL_Renderer* ren, int *screen,int *vencedor){
 	short int cont;
 	unsigned short int posBola = 6;
 	
-	//cria pontuacao
+	//cria pontuacao1
+	
 	dadosPontuacao pontuacao1;
 	constroiPont(ren,&pontuacao1,0,260,"timeA.png");
 	dadosPontuacao pontuacao2;
@@ -336,7 +335,7 @@ void rodaJogo(SDL_Renderer* ren, int *screen,int *vencedor){
 				(pontuacao1.n)++;
 			}
 			//TRATAR O GOL VEZ GOLEIRO
-			if(player.state == vezGoleiro && goleiro.state == agarrando){ 
+			if(player.state == vezGoleiro && goleiro.state == agarrando){ //Vendo se outrogoleiro conseguiu agarrar ou tomou gol, tira a animacao de agarrar 
 				aguardando = true;
 				bola.state = parada;
 			}
@@ -493,6 +492,7 @@ void rodaJogo(SDL_Renderer* ren, int *screen,int *vencedor){
 						}
 						(pontuacao2.n)++;
 						goleiro.texture = IMG_LoadTexture(ren, "goleiros200x170.png");
+						//goleiro.texture = IMG_LoadTexture(ren, "quadrado.png");						
 						goleiro.corte = (SDL_Rect) {0,0,200,170};
 						goleiro.rect.x = 350; //MUDEI
 						goleiro.rect.y = 100;
@@ -554,7 +554,6 @@ void rodaJogo(SDL_Renderer* ren, int *screen,int *vencedor){
 		if(goleiro.state == esperando && barra1.state == off && barra2.state == off && player.state == vezBatedor){
 			goleiro.state = agarrando;
 			goleiro.aux = 0;
-			//if(goleiro.aux <= 30) (goleiro.aux)++;
 			goleiro.pos = rand() % 6;		
 		}
 		if(player.state == vezGoleiro && goleiro.state == agarrando){
@@ -599,7 +598,7 @@ void chamaMenu(SDL_Renderer* ren,int *screen){
     listaSurfaceText[1] = TTF_RenderText_Solid(ourFont, "About",padrao); 
     listaSurfaceText[2] = TTF_RenderText_Solid(ourFont, "Quit",padrao); 
 
- 	SDL_Texture* bgmenu = IMG_LoadTexture(ren, "menufundo.png");
+ 	SDL_Texture* bgmenu = IMG_LoadTexture(ren, "telamenu.png");
     struct SDL_Texture* listaTextureText[3];
 	listaTextureText[0] = SDL_CreateTextureFromSurface(ren,listaSurfaceText[0]);
     listaTextureText[1] = SDL_CreateTextureFromSurface(ren,listaSurfaceText[1]);
@@ -607,9 +606,9 @@ void chamaMenu(SDL_Renderer* ren,int *screen){
     
     int i;
     SDL_Point mouse = {0,0};
-    SDL_Rect recPlay = {300,210,100,30};
+    SDL_Rect recPlay = {320,210,100,30};
     SDL_Rect recAbout = {410,210,100,30};
-    SDL_Rect recQuit = {520,210,100,30};
+    SDL_Rect recQuit = {500,210,100,30};
     
     bool selecionado = false;
  	int espera = 0;    
@@ -633,9 +632,9 @@ void chamaMenu(SDL_Renderer* ren,int *screen){
 					   		mudaCor(ren,listaSurfaceText,listaTextureText,focus,0,"Play",ourFont);
 					   	}
 
-					   	else if(SDL_PointInRect(&mouse,&recAbout)){
+					   /*	else if(SDL_PointInRect(&mouse,&recAbout)){
 					   		mudaCor(ren,listaSurfaceText,listaTextureText,focus,1,"About",ourFont);					   	
-					   	}
+					   	}*/
 					   	
 					   	else if(SDL_PointInRect(&mouse,&recQuit)){
 					   		mudaCor(ren,listaSurfaceText,listaTextureText,focus,2,"Quit",ourFont);
@@ -643,7 +642,7 @@ void chamaMenu(SDL_Renderer* ren,int *screen){
 					   	}
 					   	else{
 					   		mudaCor(ren,listaSurfaceText,listaTextureText,padrao,0,"Play",ourFont);
-					   		mudaCor(ren,listaSurfaceText,listaTextureText,padrao,1,"About",ourFont);					   	
+					   		//mudaCor(ren,listaSurfaceText,listaTextureText,padrao,1,"About",ourFont);					   	
 					   		mudaCor(ren,listaSurfaceText,listaTextureText,padrao,2,"Quit",ourFont);
 							selecionado = false;
 					   	}
@@ -669,7 +668,7 @@ void chamaMenu(SDL_Renderer* ren,int *screen){
 		}
 		SDL_RenderCopy(ren,bgmenu,NULL,NULL);
 		SDL_RenderCopy(ren,listaTextureText[0],NULL,&recPlay);
-		SDL_RenderCopy(ren,listaTextureText[1],NULL,&recAbout);
+		//SDL_RenderCopy(ren,listaTextureText[1],NULL,&recAbout);
 		SDL_RenderCopy(ren,listaTextureText[2],NULL,&recQuit);
 		SDL_RenderPresent(ren);
 	}	
@@ -764,3 +763,4 @@ int main (int argc, char* args[]){
     SDL_DestroyWindow(win);
     SDL_Quit();
 }
+	
