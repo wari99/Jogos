@@ -716,7 +716,7 @@ void rodaTelaFinal(SDL_Renderer* ren,int *vencedor,int *screen){
 }
 
 SDL_Window* create_window(void) {
-    SDL_Window* win = SDL_CreateWindow("Soccer: Match Decider",
+    SDL_Window* win = SDL_CreateWindow("SOCCER SHOOTOUTS",
                          SDL_WINDOWPOS_UNDEFINED,
                          SDL_WINDOWPOS_UNDEFINED,
                          900, 350, SDL_WINDOW_SHOWN
