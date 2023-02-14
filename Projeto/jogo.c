@@ -721,7 +721,6 @@ int main (int argc, char* args[]){
             	rodaTelaFinal(ren,&vencedor,&screen);
         } 
 	}
-	
     /* FINALIZACAO */
     SDL_DestroyRenderer(ren);
     SDL_DestroyWindow(win);
