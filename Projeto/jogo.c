@@ -19,7 +19,7 @@ enum estadoBola {parada = 0, girando};
 enum estadoBarra {off = 0, on};
 enum estadoTorcida {up = 0, down};
 enum estadoPlayer {vezBatedor = 0, vezGoleiro};
-enum stateGame{menu = 0,jogo,telaFinal,fim};
+enum stateGame{menu = 0,jogo,telaFinal,fim, novo};
 typedef struct dadosPonto{
 	SDL_Rect r;
 	bool state;
@@ -162,12 +162,12 @@ int AUX_WaitEventTimeoutCount(SDL_Event* evt, Uint32* ms){
     } return 0;
 }
 
-void mudaCor(SDL_Renderer* ren,SDL_Surface* listaS[],SDL_Texture* listaT[],SDL_Color cor,int i,char nome[],TTF_Font *ourFont){
+void mudaCor(SDL_Renderer* ren,SDL_Surface* listaS[],SDL_Texture* listaT[],SDL_Color cor,int8_t i,char nome[],TTF_Font *ourFont){
 	listaS[i] = TTF_RenderText_Solid(ourFont, nome,cor);  
 	listaT[i] = SDL_CreateTextureFromSurface(ren,listaS[i]);
 }
 
-void rodaJogo(SDL_Renderer* ren, int *screen,int *vencedor){
+void rodaJogo(SDL_Renderer* ren, uint8_t *screen,int8_t *vencedor){
 
 	//cria torcida
 	dadosTorcida torcida;
@@ -295,18 +295,26 @@ void rodaJogo(SDL_Renderer* ren, int *screen,int *vencedor){
 			if(bola.aux == forca){	
 				forca = -1;		
 				calculaStatusBall(&statusBall, bola);
+				#ifdef DEBUG
 				printf("\n *Status ball: %d* *goleiro.pos: %d* ",statusBall,goleiro.pos);
+				#endif
 				if(SDL_HasIntersection(&bola.rect, &goleiro.rect)){
+				#ifdef DEBUG
 					printf("Agarrou!!");
+				#endif
 					pontuacao1.vetPontos[pontuacao1.n].img = IMG_LoadTexture(ren, "perdeu.png");
 				}
 				else if(!SDL_HasIntersection(&bola.rect, &goleiro.rect) && SDL_HasIntersection(&bola.rect, &rectGol)){
+				#ifdef DEBUG
 					printf("Gol!!!");
+				#endif	
 					pontuacao1.vetPontos[pontuacao1.n].img = IMG_LoadTexture(ren, "acertou.png");
 					pontuacao1.valor++;
 				}
 				else if(!SDL_HasIntersection(&bola.rect, &rectGol)){
+				#ifdef DEBUG
 					printf("Fora!!!");
+				#endif	
 					pontuacao1.vetPontos[pontuacao1.n].img = IMG_LoadTexture(ren, "perdeu.png");
 				}
 				aguardando = true;
@@ -562,7 +570,7 @@ void rodaJogo(SDL_Renderer* ren, int *screen,int *vencedor){
 
 }
 
-void chamaMenu(SDL_Renderer* ren,int *screen){
+void chamaMenu(SDL_Renderer* ren, uint8_t *screen){
     TTF_Init();
     SDL_Color padrao = { 0,0,0,255 };
     SDL_Color focus = { 255,255,255,255 };
@@ -571,19 +579,24 @@ void chamaMenu(SDL_Renderer* ren,int *screen){
     struct SDL_Surface* listaSurfaceText[3];
     listaSurfaceText[0] = TTF_RenderText_Solid(ourFont, "Play",padrao);  
     listaSurfaceText[1] = TTF_RenderText_Solid(ourFont, "About",padrao); 
-    listaSurfaceText[2] = TTF_RenderText_Solid(ourFont, "Quit",padrao); 
+    listaSurfaceText[2] = TTF_RenderText_Solid(ourFont, "Quit",padrao);     
+    listaSurfaceText[3] = TTF_RenderText_Solid(ourFont, "Novo",padrao); 
 
  	SDL_Texture* bgmenu = IMG_LoadTexture(ren, "telamenu.png");
-    struct SDL_Texture* listaTextureText[3];
+ 	
+    struct SDL_Texture* listaTextureText[4];
 	listaTextureText[0] = SDL_CreateTextureFromSurface(ren,listaSurfaceText[0]);
     listaTextureText[1] = SDL_CreateTextureFromSurface(ren,listaSurfaceText[1]);
-    listaTextureText[2] = SDL_CreateTextureFromSurface(ren,listaSurfaceText[2]);
+    listaTextureText[2] = SDL_CreateTextureFromSurface(ren,listaSurfaceText[2]);    
+    listaTextureText[3] = SDL_CreateTextureFromSurface(ren,listaSurfaceText[3]);
     
     int i;
     SDL_Point mouse = {0,0};
     SDL_Rect recPlay = {320,210,100,30};
     SDL_Rect recAbout = {410,210,100,30};
     SDL_Rect recQuit = {500,210,100,30};
+    
+    SDL_Rect recNovo = {500,90,100,30};
     
     bool selecionado = false;
  	int espera = 0;    
@@ -611,9 +624,13 @@ void chamaMenu(SDL_Renderer* ren,int *screen){
 					   		mudaCor(ren,listaSurfaceText,listaTextureText,focus,2,"Quit",ourFont);
 
 					   	}
+					   	else if(SDL_PointInRect(&mouse, &recNovo)){
+					   		mudaCor(ren,listaSurfaceText,listaTextureText,focus,3,"Novo",ourFont);
+					   	}
 					   	else{
 					   		mudaCor(ren,listaSurfaceText,listaTextureText,padrao,0,"Play",ourFont);
 					   		mudaCor(ren,listaSurfaceText,listaTextureText,padrao,2,"Quit",ourFont);
+					   		mudaCor(ren,listaSurfaceText,listaTextureText,padrao,3,"Novo",ourFont);
 							selecionado = false;
 					   	}
 				break;
@@ -631,6 +648,9 @@ void chamaMenu(SDL_Renderer* ren,int *screen){
 							else if(SDL_PointInRect(&mouse,&recPlay) && selecionado) {
 								*screen = jogo;
 							}
+							else if(SDL_PointInRect(&mouse, &recNovo) && selecionado){
+								*screen = novo;
+							}
 						}
 					}
 				break;
@@ -639,6 +659,9 @@ void chamaMenu(SDL_Renderer* ren,int *screen){
 		SDL_RenderCopy(ren,bgmenu,NULL,NULL);
 		SDL_RenderCopy(ren,listaTextureText[0],NULL,&recPlay);
 		SDL_RenderCopy(ren,listaTextureText[2],NULL,&recQuit);
+		
+		SDL_RenderCopy(ren,listaTextureText[3],NULL,&recNovo);
+				
 		SDL_RenderPresent(ren);
 	}	
 
@@ -652,7 +675,7 @@ void chamaMenu(SDL_Renderer* ren,int *screen){
 	TTF_Quit();
 }
 
-void rodaTelaFinal(SDL_Renderer* ren,int *vencedor,int *screen){
+void rodaTelaFinal(SDL_Renderer* ren,int8_t *vencedor,uint8_t *screen){
 	SDL_Texture *telaF;
 	if(*vencedor == 0) telaF = IMG_LoadTexture(ren, "telaempate.png");
 	else if(*vencedor == 1) telaF = IMG_LoadTexture(ren, "telaganhou.png");
@@ -682,6 +705,41 @@ void rodaTelaFinal(SDL_Renderer* ren,int *vencedor,int *screen){
 	}
 }
 
+
+//!!!!!!!!!!!1
+/*void roda_novo(SDL_Renderer* ren, int *screen){
+	SDL_Texture *telaNovo;
+	
+	telaNovo = IMG_LoadTexture(ren, "teste1.png");
+
+	int espera = 0;    
+	Uint32 antes = 0;
+	
+	while(*screen == novo){
+		SDL_SetRenderDrawColor(ren, 0xFF, 0xFF, 0xFF, 0x00);
+		SDL_RenderClear(ren);
+		SDL_RenderCopy(ren,telaNovo,NULL,NULL);
+		SDL_RenderPresent(ren);
+		
+		espera = MAX(espera - (int)(SDL_GetTicks() - antes), 0);
+	  	SDL_Event evento; int isevt = AUX_WaitEventTimeoutCount(&evento,&espera);    
+	  	antes = SDL_GetTicks();	
+	  	
+		if(isevt){ 
+	  		switch(evento.type){
+	  			case SDL_KEYUP:
+	  				if(evento.key.keysym.sym == SDLK_ESCAPE) *screen = fim;
+	  				break;
+	  			case SDL_QUIT:
+	  				*screen = fim;
+	  				break;
+	  			default:
+	  				SDL_FlushEvent(evento.type);
+	  		}
+		}
+	}
+}*/
+
 SDL_Window* create_window(void) {
     SDL_Window* win = SDL_CreateWindow("SOCCER SHOOTOUTS",
                          SDL_WINDOWPOS_UNDEFINED,
@@ -690,17 +748,31 @@ SDL_Window* create_window(void) {
                       );
 
     if(win==NULL) {
+		#ifdef DEBUG
         printf("Janela não foi criada.\nSDL_Error: %s\n", SDL_GetError());
+		#endif
+    }
+    else{
+		#ifdef DEBUG    
+    	printf("Janela foi criada.\n");
+    	#endif
     }
 
     return win;
 }
 
 SDL_Renderer* create_renderer(SDL_Window* win) {
-    SDL_Renderer* ren = SDL_CreateRenderer(win, -1, 0);
+   SDL_Renderer* ren = SDL_CreateRenderer(win, -1, 0);
 
     if(win==NULL) {
-        printf("Janela não foi criada.\nSDL_Error: %s\n", SDL_GetError());
+		#ifdef DEBUG    
+    	printf("Renderer não foi criado.\n");
+    	#endif
+    }
+    else{
+    	#ifdef DEBUG    
+    	printf("Renderer foi criado.\n");
+    	#endif
     }
 
     SDL_SetRenderDrawBlendMode(ren, SDL_BLENDMODE_BLEND);
@@ -714,8 +786,9 @@ int main (int argc, char* args[]){
     IMG_Init(0);
   	SDL_Window* win = create_window();
     SDL_Renderer* ren = create_renderer(win);
-	int vencedor = -1;
-	int screen = menu;
+    
+	int8_t vencedor = -1;
+	uint8_t screen = menu;
 	
     while(screen != fim){
 		switch (screen) {
@@ -725,6 +798,8 @@ int main (int argc, char* args[]){
 				rodaJogo(ren,&screen,&vencedor);
             case telaFinal:
             	rodaTelaFinal(ren,&vencedor,&screen);
+            //case novo:
+            //	roda_novo(ren, &screen);
         } 
 	}
 	
