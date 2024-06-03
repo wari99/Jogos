@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include <assert.h>
 #include <SDL2/SDL2_gfxPrimitives.h>
 #include <SDL2/SDL.h>
@@ -8,13 +9,16 @@
 #include <stdlib.h>
 #include <math.h>
 #define MAX(x,y) (((x) > (y)) ? (x) : (y))
+
 // gcc jogo.c -lSDL2 -lSDL2_image -lSDL2_ttf -o jogo.exe
+// srand(time(NULL));
+//
 
 enum estadoGoleiro {esperando = 0, agarrando};
 enum estadoBola {parada = 0, girando};
 enum estadoBarra {off = 0, on};
 enum estadoTorcida {up = 0, down};
-enum estadoPlayer {vezBatedor = 0, vezGoleiro,aguardando, venceuDisputa, perdeuDisputa};
+enum estadoPlayer {vezBatedor = 0, vezGoleiro};
 enum stateGame{menu = 0,jogo,telaFinal,fim};
 typedef struct dadosPonto{
 	SDL_Rect r;
@@ -24,46 +28,46 @@ typedef struct dadosPonto{
 
 typedef struct dadosPontuacao{
     dadosPonto vetPontos[5];
-	short int n;//Numero de tentativas;
-	short int valor;
+	unsigned short int n;//Numero de tentativas;
+	unsigned short int valor;
 	SDL_Texture* texture;
 	SDL_Rect rect;
-	short int i;
+	unsigned short int i;
 }dadosPontuacao;
 
 
 typedef struct dadosPlayer{
-	unsigned short int state;
+	uint8_t state;
 	unsigned short int pontuacao;
 }dadosPlayer;
 
 typedef struct dadosTorcida{
 	SDL_Texture* texture;
-	unsigned short int state;
-	int aux;
+	uint8_t  state;
+	uint8_t aux;
 }dadosTorcida;
 
 typedef struct dadosGoleiro{
 	SDL_Rect rect;
 	SDL_Rect corte;
 	SDL_Texture* texture;
-	unsigned short int state;
-	unsigned short int aux;
-	unsigned short int pos;
+	uint8_t  state;
+	uint8_t aux;
+	uint8_t  pos;
 	
 }dadosGoleiro;
 
 typedef struct dadosBola{
 	SDL_Rect rect;
 	SDL_Texture* texture;
-	unsigned short int state;
-	int aux;
+	uint8_t state;
+	uint8_t aux;
 }dadosBola;
 
 typedef struct dadosBarra{
 	SDL_Rect rect;
 	SDL_Texture* texture;
-	unsigned short int state;
+	uint8_t state;
 	struct dadosBola bola;
 }dadosBarra;
 
@@ -109,7 +113,7 @@ void calculaForca(short int *forca, dadosBarra barra2){
 }
 
 void calculaStatusBall(short int *statusBall, dadosBola bola){ 
-	int auxX = bola.rect.x - (bola.rect.w)/2;
+	unsigned short int auxX = bola.rect.x - (bola.rect.w)/2;
 	int auxY = bola.rect.y - (bola.rect.h)/2;
 	
 	if(auxX>=211 && auxX<=400 && auxY>=66 && auxY<=152) *statusBall = 3;
@@ -119,19 +123,20 @@ void calculaStatusBall(short int *statusBall, dadosBola bola){
 	else if(auxX>=401 && auxX <= 500 && auxY>= 152 && auxY<= 238) *statusBall = 0;
 	else if(auxX>=400 && auxX<=691 && auxY>=152 && auxY<=238) *statusBall = 4;
 	else *statusBall = 6;	
+	
 }
 
 void constroiPont(SDL_Renderer *ren,dadosPontuacao* pontuacao, int x,int y, char *endereco){
 	pontuacao->n = 0;
 	pontuacao->rect = (SDL_Rect) {x,y,240,40};
 	
-	int aux = pontuacao->rect.x + 40;
+	short int aux = pontuacao->rect.x + 40;
 	
 	pontuacao->i = 0;
     pontuacao->texture = IMG_LoadTexture(ren, endereco);
     pontuacao->valor = 0;
     
-	for(int i = 0; i<5;i++){
+	for(short int i = 0; i<5;i++){
 		pontuacao->vetPontos[i].img = NULL;
 	 	pontuacao->vetPontos[i].state = false;
 	 	SDL_Rect recAux = {aux,y,40,40};
@@ -232,7 +237,7 @@ void rodaJogo(SDL_Renderer* ren, int *screen,int *vencedor){
 	assert(imgGol != NULL);	
 	assert(imgBola != NULL);
 				
-	int contadorX = 140, contadorY = 87, aguardandoAux = 1, i = 0;
+	short int contadorX = 140, contadorY = 87, aguardandoAux = 1, i = 0;
 	bool setorSelecionado = false;
 	short int setorAux = -1, bolaaux = 1, bolaauxY = 1;
 	
@@ -518,6 +523,7 @@ void rodaJogo(SDL_Renderer* ren, int *screen,int *vencedor){
 					}
 				}	
 				(goleiro.aux)++;
+
 				espera = 20;	
 			}	
 		if(goleiro.state == esperando && barra1.state == off && barra2.state == off && player.state == vezBatedor){
@@ -721,8 +727,10 @@ int main (int argc, char* args[]){
             	rodaTelaFinal(ren,&vencedor,&screen);
         } 
 	}
+	
     /* FINALIZACAO */
     SDL_DestroyRenderer(ren);
     SDL_DestroyWindow(win);
     SDL_Quit();
 }
+	
