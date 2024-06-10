@@ -28,17 +28,17 @@ typedef struct dadosPonto{
 
 typedef struct dadosPontuacao{
     dadosPonto vetPontos[5];
-	unsigned short int n;//Numero de tentativas;
-	unsigned short int valor;
+	uint8_t n;//Numero de tentativas;
+	uint8_t valor;
 	SDL_Texture* texture;
 	SDL_Rect rect;
-	unsigned short int i;
+	uint8_t i;
 }dadosPontuacao;
 
 
 typedef struct dadosPlayer{
 	uint8_t state;
-	unsigned short int pontuacao;
+	uint8_t pontuacao;
 }dadosPlayer;
 
 typedef struct dadosTorcida{
@@ -148,7 +148,7 @@ void constroiPont(SDL_Renderer *ren,dadosPontuacao* pontuacao, int x,int y, char
 
 void chamaPont(SDL_Renderer* ren, dadosPontuacao pontuacao){
 	SDL_RenderCopy(ren, pontuacao.texture, NULL, &pontuacao.rect);
-	for(int i = 0; i<5;i++){
+	for(uint8_t i = 0; i<5;i++){
 		SDL_RenderCopy(ren, pontuacao.vetPontos[i].img, NULL, &pontuacao.vetPontos[i].r);
 	}
 }
