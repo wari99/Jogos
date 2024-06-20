@@ -1,14 +1,13 @@
-//Contador funcionando mas quando chega no chão ele fica igual 
 #include <SDL2/SDL2_gfxPrimitives.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include <math.h>
 
-const int largura_tela = 800;
-const int altura_tela = 600;
+const int SCREEN_WIDTH = 800;
+const int SCREEN_HEIGHT = 600;
 
 SDL_Window* window = NULL;
-SDL_Renderer* renderer = NULL;
+SDL_Renderer* ren = NULL;
 TTF_Font* font = NULL; 
 
 typedef struct {
@@ -17,29 +16,34 @@ typedef struct {
     float velocidade_Y;
 	
     Uint8 r, g, b, a;
+	
     int encostaChao; 
 } Bola;
 
-Bola bola = {largura_tela / 2, altura_tela / 2, 70, 0, 255, 0, 0, 255, 1}; 
-
-const float GRAVIDADE_CONST = 0.5;
+Bola bola = {SCREEN_WIDTH/2, SCREEN_HEIGHT/2, 70, 0, 255, 0, 0, 255, 1}; // Inicia a bola no chão
+const float GRAVIDADE = 0.5;
 int cont = 0;
 
-void desenhaBola(const Bola* bola) {
-    filledCircleRGBA(renderer, bola->x, bola->y, bola->raio, bola->r, bola->g, bola->b, bola->a);
+void desenhoBola(const Bola* bola) {
+    filledCircleRGBA(ren, bola->x, bola->y, bola->raio, bola->r, bola->g, bola->b, bola->a);
 }
 
 void movimentoBola(Bola* bola) {
-    bola->velocidade_Y += GRAVIDADE_CONST;
+    bola->velocidade_Y += GRAVIDADE;
     bola->y += bola->velocidade_Y;
 
-    //detecta colisao parte inferior 
-    if (bola->y + bola->raio > altura_tela) {
-        bola->y = altura_tela - bola->raio;
+	//colidir com o interior da tela
+    if (bola->y + bola->raio > SCREEN_HEIGHT) {
+        bola->y = SCREEN_HEIGHT - bola->raio;
         bola->velocidade_Y = 0;
-        bola->encostaChao = 1; // bola esta no chao
+        bola->encostaChao = 1; 
     } else {
-        bola->encostaChao = 0; // a bola n esta no chao
+        bola->encostaChao = 0;
+    }
+
+	//se encosta no chao reseta 
+    if (bola->encostaChao && cont > 0) {
+        cont = 0;
     }
 }
 
@@ -47,24 +51,23 @@ void acaoClique(int mouseX, int mouseY) {
     int dx = mouseX - bola.x;
     int dy = mouseY - bola.y;
 	
-    int distanciaFormula = dx * dx + dy * dy;
-	
-    if (distanciaFormula <= bola.raio * bola.raio && !bola.encostaChao) {
+    float distancia = sqrt(dx * dx + dy * dy); //dist entre o ponto do clique e o centro da bola
+    
+	if (distancia <= bola.raio && !bola.encostaChao) {
         if (mouseY < bola.y - bola.raio / 3) {
-            bola.velocidade_Y = -12;  
+            bola.velocidade_Y = -12; 
         } else if (mouseY > bola.y + bola.raio / 3) {
             bola.velocidade_Y = -17; 
         } else {
-            bola.velocidade_Y = -20; 
+            bola.velocidade_Y = -20;
         }
-		
-        cont++; //contador se a bola nao estiver no chao, ainda n esta bom
+        cont++; 
     }
 }
 
 void renderizarTexto(const char* text, int x, int y, SDL_Color textColor) {
     SDL_Surface* surface = TTF_RenderText_Solid(font, text, textColor);
-    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(ren, surface);
     SDL_FreeSurface(surface);
 
     int texW = 0;
@@ -72,7 +75,7 @@ void renderizarTexto(const char* text, int x, int y, SDL_Color textColor) {
     SDL_QueryTexture(texture, NULL, NULL, &texW, &texH);
 
     SDL_Rect dstRect = { x, y, texW, texH };
-    SDL_RenderCopy(renderer, texture, NULL, &dstRect);
+    SDL_RenderCopy(ren, texture, NULL, &dstRect);
     SDL_DestroyTexture(texture);
 }
 
@@ -89,18 +92,20 @@ void mainLoop() {
             }
         }
 
-        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-        SDL_RenderClear(renderer);
+        SDL_SetRenderDrawColor(ren, 255, 255, 255, 255);
+        SDL_RenderClear(ren);
 
         movimentoBola(&bola);
-        desenhaBola(&bola);
+        desenhoBola(&bola);
 
         SDL_Color textColor = { 0, 0, 0, 255 };
         char textoContador[50];
+		
         snprintf(textoContador, sizeof(textoContador), "Embaixadinhas: %d", cont);
-        renderizarTexto(textoContador, 10, 10, textColor);
+        
+		renderizarTexto(textoContador, 10, 10, textColor);
 
-        SDL_RenderPresent(renderer);
+        SDL_RenderPresent(ren);
 
         SDL_Delay(16); 
     }
@@ -118,16 +123,16 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    window = SDL_CreateWindow("Embaixadinha", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, largura_tela, altura_tela, SDL_WINDOW_SHOWN);
+    window = SDL_CreateWindow("Embaixadinha", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
     if (!window) {
         printf("Erro ao criar janela: %s\n", SDL_GetError());
         SDL_Quit();
         return 1;
     }
 
-    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-    if (!renderer) {
-        printf("Erro ao criar renderer: %s\n", SDL_GetError());
+    ren = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    if (!ren) {
+        printf("Erro ao criar ren: %s\n", SDL_GetError());
         SDL_DestroyWindow(window);
         SDL_Quit();
         return 1;
@@ -136,7 +141,7 @@ int main(int argc, char* argv[]) {
     font = TTF_OpenFont("Mont-HeavyDEMO.otf", 24); 
     if (!font) {
         printf("Erro ao carregar fonte: %s\n", TTF_GetError());
-        SDL_DestroyRenderer(renderer);
+        SDL_DestroyRenderer(ren);
         SDL_DestroyWindow(window);
         SDL_Quit();
         return 1;
@@ -145,7 +150,7 @@ int main(int argc, char* argv[]) {
     mainLoop();
 
     TTF_CloseFont(font);
-    SDL_DestroyRenderer(renderer);
+    SDL_DestroyRenderer(ren);
     SDL_DestroyWindow(window);
     TTF_Quit();
     SDL_Quit();
