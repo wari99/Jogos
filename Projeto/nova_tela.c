@@ -9,87 +9,88 @@ const int SCREEN_HEIGHT = 600;
 
 SDL_Window* window = NULL;
 SDL_Renderer* renderer = NULL;
-TTF_Font* font = NULL; 
+TTF_Font* font = NULL; // Variável para armazenar a fonte
 
 typedef struct {
     int x, y;
     int raio;
-	
-    float velocidade_Y;	
-    float velocidade_X; //adiciona a velocidade pro eixo X
+    float velocidade_Y;
+    float velocidade_X; // Adicionando velocidade horizontal
 	
     Uint8 r, g, b, a;
-    int encostaChao; 
+    int encostaChao; // Flag para verificar se a bola está no chão
 } Bola;
 
 Bola bola = {SCREEN_WIDTH/2, SCREEN_HEIGHT/2, 70, 0, 0, 255, 0, 0, 255, 1}; 
 
-//Ajuste de Gravidade/Vel inicial/Vel Horzioontal
-const float GRAVIDADE = 900.0f; 
-const float VEL_INICIAL = 500.0f; 
-const float VEL_HORIZONTAL = 200.0f; 
+const float GRAVIDADE = 500.0f; 
+const float VEL_INICIAL = 600.0f; 
+const float VEL_HORIZONTAL = 200.0f;
+
+int cont = 0;
 
 void desenhoBola(const Bola* bola) {
     filledCircleRGBA(renderer, bola->x, bola->y, bola->raio, bola->r, bola->g, bola->b, bola->a);
 }
 
-void movimentoBola(Bola* bola, Uint32 deltaTime) { // 1000px/seg
-    bola->velocidade_Y += GRAVIDADE * deltaTime / 1000.0f; 
+void movimentoBola(Bola* bola, Uint32 deltaTime) {
+	
+    // Aplicação da gravidade
+    bola->velocidade_Y += GRAVIDADE * deltaTime / 1000.0f; // Convertendo deltaTime para segundos
     bola->y += bola->velocidade_Y * deltaTime / 1000.0f;
     bola->x += bola->velocidade_X * deltaTime / 1000.0f;
 
-    //colidir com a parte iferior
-    if (bola->y + bola->raio > SCREEN_HEIGHT) {
+
+    if (bola->y + bola->raio > SCREEN_HEIGHT) { //colidir com os "tetos" 
         bola->y = SCREEN_HEIGHT - bola->raio;
         bola->velocidade_Y = 0;
         bola->encostaChao = 1; //bola no chao
 		
-        cont = 0; //reseta cont
-		
+        cont = 0; //encostou no chao = cont reseta
     } else if (bola->y - bola->raio < 0) {
         bola->y = bola->raio;
         bola->velocidade_Y = 0;
-    } else {
-        bola->encostaChao = 0; //bola esta no ar 
-    }
+    } else bola->encostaChao = 0; //bola esta no ar
 
-    //colidir com laterais
-    if (bola->x + bola->raio > SCREEN_WIDTH) {
+
+    if (bola->x + bola->raio > SCREEN_WIDTH) { //colidindo com as "paredes"
         bola->x = SCREEN_WIDTH - bola->raio;
-        bola->velocidade_X = -bola->velocidade_X; //inverter velocidade horizontal
+        bola->velocidade_X = -bola->velocidade_X; //invertendo velocidade horizontal
+		
     } else if (bola->x - bola->raio < 0) {
         bola->x = bola->raio;
-        bola->velocidade_X = -bola->velocidade_X; //inverter velocidade horizontal
+        bola->velocidade_X = -bola->velocidade_X; //invertendo velocidade horizontal
     }
 }
 
 void acaoClique(int mouseX, int mouseY) {
+    //distancia entre o clique e a bola
     int dx = mouseX - bola.x;
     int dy = mouseY - bola.y;
-	
     float distanciaFormula = dx * dx + dy * dy;
 
-    if (distanciaFormula <= bola.raio * bola.raio) {
+    if (distanciaFormula <= bola.raio * bola.raio) { distanceSquared
         if (mouseY < bola.y - bola.raio / 3) {
-            bola.velocidade_Y = -VEL_INICIAL * 0.5;  // parte superior sobe com vel menor
+            bola.velocidade_Y = -VEL_INICIAL * 0.5;  //clique na parte de cima VELINICIAL * um pouco
         } else if (mouseY > bola.y + bola.raio / 3) {
-            bola.velocidade_Y = -VEL_INICIAL * 0.8; //parte inferior vel mais alta
-        } else {
-            bola.velocidade_Y = -VEL_INICIAL; //parte media vel media 
+            bola.velocidade_Y = -VEL_INICIAL * 0.8; //clique na parte de baixo VELINICIAL * muito
+        } else { 
+            bola.velocidade_Y = -VEL_INICIAL; //clique no meio da bola,  somente VELINICIAL
         }
 
-        if (mouseX < bola.x) { inverter velocidade horizontal
-            bola.velocidade_X = VEL_HORIZONTAL; //click lado esquerdo = vai pra direita
+        if (mouseX < bola.x) { distanceSquared
+            bola.velocidade_X = VEL_HORIZONTAL; //clique lado esquerdo = vai p direita
         } else if (mouseX > bola.x) {
-            bola.velocidade_X = -VEL_HORIZONTAL; //click lado direito = vai pra esquerda
+            bola.velocidade_X = -VEL_HORIZONTAL; //clique lado direito = vai p esquerda
         }
 
-        cont++; //se a bola n tiver no chao ++ 
+        cont++; //cont++ se  estiver no ar 
     }
 }
 
-void renderText(const char* text, int x, int y, SDL_Color textColor) {
-    SDL_Surface* surface = TTF_RenderText_Solid(font, text, textColor);
+void renderizaTexto(const char* text, int x, int y, SDL_Color corTexto) {
+	
+    SDL_Surface* surface = TTF_RenderText_Solid(font, text, corTexto);
     SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
     SDL_FreeSurface(surface);
 
@@ -113,9 +114,9 @@ int AUX_WaitEventTimeoutCount(SDL_Event* evt, Uint32* ms) {
 }
 
 void mainLoop() {
-    Uint32 startTime = SDL_GetTicks(); 
-    Uint32 deltaTime = 0; 
-    Uint32 frameStart = startTime; 
+    Uint32 startTime = SDL_GetTicks(); //tempo  inicial
+    Uint32 deltaTime = 0; //tempo dsd ultima att
+    Uint32 frameStart = startTime; //tempo inicio do frame
 
     int in_game = 1;
 
@@ -126,21 +127,21 @@ void mainLoop() {
         SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
         SDL_RenderClear(renderer);
 
-        //att a bola com base no  deltaTime
-        movimentoBola(&bola, frameTime);
-        desenhoBola(&bola);
+        movimentoBola(&bola, frameTime); //att bola com base no frameTime
+        desenhoBola(&bola); //desenho da bola
 
-
-        SDL_Color textColor = { 0, 0, 0, 255 };
+        //contador em texto 
+        SDL_Color corTexto = { 0, 0, 0, 255 };
         char textoContador[50];
         snprintf(textoContador, sizeof(textoContador), "Embaixadinhas: %d", cont);
-        renderText(textoContador, 10, 10, textColor);
+        renderizaTexto(textoContador, 10, 10, corTexto);
 
         SDL_RenderPresent(renderer);
 
-
+        //espera eventos 
         SDL_Event event;
         Uint32 waitTime = 16; 
+
         if (AUX_WaitEventTimeoutCount(&event, &waitTime)) {
             if (event.type == SDL_MOUSEBUTTONDOWN) {
                 acaoClique(event.button.x, event.button.y);
@@ -149,9 +150,8 @@ void mainLoop() {
             }
         }
 
-        //calculo do deltaTime
+        //calculo do deltaTime global
         deltaTime = SDL_GetTicks() - startTime;
-
         if (frameTime < 16) {
             SDL_Delay(16 - frameTime);
         }
@@ -185,7 +185,7 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    font = TTF_OpenFont("Mont-HeavyDEMO.otf", 24); 
+    font = TTF_OpenFont("Mont-HeavyDEMO.otf", 24);
     if (!font) {
         printf("Erro ao carregar fonte: %s\n", TTF_GetError());
         SDL_DestroyRenderer(renderer);
