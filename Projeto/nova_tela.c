@@ -1,16 +1,15 @@
-// Contador mas ta errado 
-
+//Contador funcionando mas quando chega no chão ele fica igual 
 #include <SDL2/SDL2_gfxPrimitives.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include <math.h>
 
-const int tela_largura = 800;
-const int tela_altura = 600;
+const int largura_tela = 800;
+const int altura_tela = 600;
 
 SDL_Window* window = NULL;
 SDL_Renderer* renderer = NULL;
-TTF_Font* font = NULL; // Variável para armazenar a fonte
+TTF_Font* font = NULL; 
 
 typedef struct {
     int x, y;
@@ -18,14 +17,15 @@ typedef struct {
     float velocidade_Y;
 	
     Uint8 r, g, b, a;
+    int encostaChao; 
 } Bola;
 
+Bola bola = {largura_tela / 2, altura_tela / 2, 70, 0, 255, 0, 0, 255, 1}; 
 
-Bola bola = {tela_largura / 2, tela_altura / 2, 70, 0, 255, 0, 0, 255};
 const float GRAVIDADE_CONST = 0.5;
 int cont = 0;
 
-void desenhoBola(const Bola* bola) {
+void desenhaBola(const Bola* bola) {
     filledCircleRGBA(renderer, bola->x, bola->y, bola->raio, bola->r, bola->g, bola->b, bola->a);
 }
 
@@ -33,11 +33,13 @@ void movimentoBola(Bola* bola) {
     bola->velocidade_Y += GRAVIDADE_CONST;
     bola->y += bola->velocidade_Y;
 
-    if (bola->y + bola->raio > tela_altura) {
-        bola->y = tela_altura - bola->raio;
+    //detecta colisao parte inferior 
+    if (bola->y + bola->raio > altura_tela) {
+        bola->y = altura_tela - bola->raio;
         bola->velocidade_Y = 0;
-		
-        cont++;
+        bola->encostaChao = 1; // bola esta no chao
+    } else {
+        bola->encostaChao = 0; // a bola n esta no chao
     }
 }
 
@@ -47,11 +49,16 @@ void acaoClique(int mouseX, int mouseY) {
 	
     int distanciaFormula = dx * dx + dy * dy;
 	
-    if (distanciaFormula <= bola.raio * bola.raio) {
-        if (mouseY < bola.y - bola.raio / 3) bola.velocidade_Y = -12; 
-        else if (mouseY > bola.y + bola.raio / 3) bola.velocidade_Y = -17; 
-        else bola.velocidade_Y = -20; 
-        
+    if (distanciaFormula <= bola.raio * bola.raio && !bola.encostaChao) {
+        if (mouseY < bola.y - bola.raio / 3) {
+            bola.velocidade_Y = -12;  
+        } else if (mouseY > bola.y + bola.raio / 3) {
+            bola.velocidade_Y = -17; 
+        } else {
+            bola.velocidade_Y = -20; 
+        }
+		
+        cont++; //contador se a bola nao estiver no chao, ainda n esta bom
     }
 }
 
@@ -62,7 +69,6 @@ void renderizarTexto(const char* text, int x, int y, SDL_Color textColor) {
 
     int texW = 0;
     int texH = 0;
-	
     SDL_QueryTexture(texture, NULL, NULL, &texW, &texH);
 
     SDL_Rect dstRect = { x, y, texW, texH };
@@ -87,13 +93,11 @@ void mainLoop() {
         SDL_RenderClear(renderer);
 
         movimentoBola(&bola);
-        desenhoBola(&bola);
+        desenhaBola(&bola);
 
         SDL_Color textColor = { 0, 0, 0, 255 };
         char textoContador[50];
-		
         snprintf(textoContador, sizeof(textoContador), "Embaixadinhas: %d", cont);
-		
         renderizarTexto(textoContador, 10, 10, textColor);
 
         SDL_RenderPresent(renderer);
@@ -114,7 +118,7 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    window = SDL_CreateWindow("Embaixadinha", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, tela_largura, tela_altura, SDL_WINDOW_SHOWN);
+    window = SDL_CreateWindow("Embaixadinha", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, largura_tela, altura_tela, SDL_WINDOW_SHOWN);
     if (!window) {
         printf("Erro ao criar janela: %s\n", SDL_GetError());
         SDL_Quit();
