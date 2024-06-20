@@ -9,16 +9,16 @@ const int SCREEN_HEIGHT = 600;
 
 SDL_Window* window = NULL;
 SDL_Renderer* renderer = NULL;
-TTF_Font* font = NULL; // Variável para armazenar a fonte
+TTF_Font* font = NULL;
 
 typedef struct {
     int x, y;
     int raio;
     float velocidade_Y;
-    float velocidade_X; // Adicionando velocidade horizontal
+    float velocidade_X; 
 	
     Uint8 r, g, b, a;
-    int encostaChao; // Flag para verificar se a bola está no chão
+    int encostaChao; 
 } Bola;
 
 Bola bola = {SCREEN_WIDTH/2, SCREEN_HEIGHT/2, 70, 0, 0, 255, 0, 0, 255, 1}; 
