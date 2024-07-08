@@ -3,9 +3,14 @@
 #include <SDL2/SDL_ttf.h>
 #include <math.h>
 #define MAX(x,y) (((x) > (y)) ? (x) : (y))
+#include <SDL2/SDL_messagebox.h>
+#include <stdio.h>
 
 const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 600;
+
+int recordeSessao = 0;
+int recordeGeral = 0;
 
 SDL_Window* window = NULL;
 SDL_Renderer* renderer = NULL;
@@ -69,7 +74,7 @@ void acaoClique(int mouseX, int mouseY) {
     int dy = mouseY - bola.y;
     float distanciaFormula = dx * dx + dy * dy;
 
-    if (distanciaFormula <= bola.raio * bola.raio) { distanceSquared
+    if (distanciaFormula <= bola.raio * bola.raio) {
         if (mouseY < bola.y - bola.raio / 3) {
             bola.velocidade_Y = -VEL_INICIAL * 0.5;  //clique na parte de cima VELINICIAL * um pouco
         } else if (mouseY > bola.y + bola.raio / 3) {
@@ -78,13 +83,32 @@ void acaoClique(int mouseX, int mouseY) {
             bola.velocidade_Y = -VEL_INICIAL; //clique no meio da bola,  somente VELINICIAL
         }
 
-        if (mouseX < bola.x) { distanceSquared
+        if (mouseX < bola.x) { 
             bola.velocidade_X = VEL_HORIZONTAL; //clique lado esquerdo = vai p direita
         } else if (mouseX > bola.x) {
             bola.velocidade_X = -VEL_HORIZONTAL; //clique lado direito = vai p esquerda
         }
 
         cont++; //cont++ se  estiver no ar 
+        
+        if (cont > recordeSessao) { //att  so o rec da sessao
+        	recordeSessao = cont;
+        }
+        
+        if (cont > recordeGeral){ 
+        	recordeGeral = cont;
+        	
+        	FILE* arquivo = fopen("recorde_geral.txt", "w");
+        	if(arquivo){
+        		fprintf(arquivo, "%d", recordeGeral);
+        		
+        		//fscanf(arquivo, "%d", &recordeGeral);
+        		fclose(arquivo);	
+        	}else{
+				SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Erro!", "Nao foi possivel salvar!", window);
+        	}
+        	
+        }    
     }
 }
 
@@ -106,7 +130,7 @@ void renderizaTexto(const char* text, int x, int y, SDL_Color corTexto) {
 int AUX_WaitEventTimeoutCount(SDL_Event* evt, Uint32* ms) {
     Uint32 antes = SDL_GetTicks();
     SDL_FlushEvent(SDL_MOUSEMOTION);
-    if (SDL_WaitEventTimeout(evt, *ms)) {
+    if (SDL_WaitEventTimeout(evt, *ms)){
         *ms = MAX(0, *ms - (int)(SDL_GetTicks() - antes));
         return 1;
     }
@@ -121,6 +145,15 @@ void mainLoop() {
     int in_game = 1;
 
     while (in_game) {
+    	FILE* arquivo = fopen("recorde_geral.txt", "r");
+    	
+    	if(arquivo){
+    		fscanf(arquivo, "%d", &recordeGeral);
+    		fclose(arquivo);
+    	}else{
+    		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Erro", "N foi possivel carregar", window);
+    	}
+    
         Uint32 frameTime = SDL_GetTicks() - frameStart;
         frameStart = SDL_GetTicks();
 
@@ -147,7 +180,16 @@ void mainLoop() {
                 acaoClique(event.button.x, event.button.y);
             } else if (event.type == SDL_QUIT) {
                 in_game = 0; 
+            } else if (event.type == SDL_KEYDOWN) {
+            	if (event.key.keysym.sym == SDLK_RETURN){
+            		// apertando tecla ENTER pressionada 
+            		char mensagem[100];
+            		snprintf(mensagem, sizeof(mensagem), "Recorde da sessao atual: %d Recorde Geral: %d", recordeSessao, recordeGeral);
+            		
+            		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "Recordes", mensagem, window);
+            	};
             }
+         
         }
 
         //calculo do deltaTime global
