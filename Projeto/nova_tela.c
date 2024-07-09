@@ -137,6 +137,20 @@ int AUX_WaitEventTimeoutCount(SDL_Event* evt, Uint32* ms) {
     return 0;
 }
 
+void zerarRecordes() {
+	recordeGeral = 0;
+	recordeSessao = 0;
+	
+	FILE* arquivo = fopen("recorde_geral.txt", "w");
+	if(arquivo){
+		fprintf(arquivo, "%d", recordeGeral);
+		fclose(arquivo);
+	}
+	else {
+		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Erro!", "Nao foi possivel resetar!", window);
+	}
+}
+
 void mainLoop() {
     Uint32 startTime = SDL_GetTicks(); //tempo  inicial
     Uint32 deltaTime = 0; //tempo dsd ultima att
@@ -183,10 +197,38 @@ void mainLoop() {
             } else if (event.type == SDL_KEYDOWN) {
             	if (event.key.keysym.sym == SDLK_RETURN){
             		// apertando tecla ENTER pressionada 
-            		char mensagem[100];
-            		snprintf(mensagem, sizeof(mensagem), "Recorde da sessao atual: %d Recorde Geral: %d", recordeSessao, recordeGeral);
-            		
-            		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "Recordes", mensagem, window);
+                    char mensagem[200];
+                    snprintf(mensagem, sizeof(mensagem), "Recorde da sessão atual: %d\nRecorde Geral: %d\n\nResetar todas as pontuacoes?", recordeSessao, recordeGeral);
+                    
+                    SDL_MessageBoxButtonData buttons[2];
+                    buttons[0].flags = SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT;
+                    buttons[0].buttonid = 0;
+                    buttons[0].text = "Sim";
+
+                    buttons[1].flags = SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT;
+                    buttons[1].buttonid = 1;
+                    buttons[1].text = "Nao";
+
+                    SDL_MessageBoxData messageboxdata;
+                    SDL_zero(messageboxdata); //limpa a estrutura garantindo q esteja 0 
+                    
+                    messageboxdata.flags = SDL_MESSAGEBOX_INFORMATION;
+                    messageboxdata.window = window;
+                    messageboxdata.title = "Recordes";
+                    messageboxdata.message = mensagem;
+                    messageboxdata.numbuttons = 2;
+                    messageboxdata.buttons = buttons;
+                    messageboxdata.colorScheme = NULL;
+
+                    int clicou_Botao;
+                    if (SDL_ShowMessageBox(&messageboxdata, &clicou_Botao) == 0) {
+                        if (clicou_Botao == 0) { //click sim
+                            zerarRecordes();
+                        }
+                    } else {
+                        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Erro", "Não foi possível exibir a mensagem", window);
+                    }
+              
             	};
             }
          
