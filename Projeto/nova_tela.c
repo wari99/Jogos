@@ -154,40 +154,45 @@ void zerarRecordes() {
 }
 
 void desenhaMenuPrincipal() {
-    SDL_Color corTexto = { 0, 0, 0, 255 };
-    renderizaTexto("JOGAR", SCREEN_WIDTH / 2 - 50, SCREEN_HEIGHT / 2 - 100, corTexto);
-    renderizaTexto("SOBRE", SCREEN_WIDTH / 2 - 50, SCREEN_HEIGHT / 2, corTexto);
-    renderizaTexto("SAIR", SCREEN_WIDTH / 2 - 50, SCREEN_HEIGHT / 2 + 100, corTexto);
+    SDL_Color vermelho_pastel = { 255,180,180, 255 };
+    SDL_Color laranja_pastel = { 255,225,180, 255 };
+    SDL_Color azul_pastel = { 185,225,255, 255 };
+            
+    renderizaTexto("JOGAR", 350, 200, vermelho_pastel);
+    renderizaTexto("SOBRE", 350, 300, laranja_pastel);
+    renderizaTexto("SAIR", 350, 400, azul_pastel);
 }
 
 void desenhaTelaSobre() {
     SDL_Color corTexto = { 0, 0, 0, 255 };
     renderizaTexto("Trabalho realizado para a disciplina de Estruturas de linguagens \n 2024.1", 20, 20, corTexto);
-    renderizaTexto("VOLTAR", SCREEN_WIDTH / 2 - 50, SCREEN_HEIGHT - 100, corTexto);
-}
-
-void desenhaTelaJogar() {
+    renderizaTexto("VOLTAR", SCREEN_WIDTH / 2 - 50, SCREEN_HEIGHT - 100, corTexto);   
+    
+    
 }
 
 void desenhaTelaPausado() {
-    SDL_Color corTexto = { 0, 0, 0, 255 };
-    renderizaTexto("PAUSADO", SCREEN_WIDTH / 2 - 50, SCREEN_HEIGHT / 2 - 100, corTexto);
-    renderizaTexto("CONTINUAR", SCREEN_WIDTH / 2 - 50, SCREEN_HEIGHT / 2, corTexto);
-    renderizaTexto("MENU PRINCIPAL", SCREEN_WIDTH / 2 - 50, SCREEN_HEIGHT / 2 + 100, corTexto);
+    SDL_Color corTexto = { 255,180,180, 255 };
+    SDL_Color opcoes = { 180,175,175, 255 };
+
+        
+    renderizaTexto("PAUSADO", 350, 200, corTexto);
+    renderizaTexto("CONTINUAR", 350, 300, opcoes);
+    renderizaTexto("MENU PRINCIPAL", 350, 400, opcoes);
 }
 
-void processarEventos(SDL_Event* evt) {
+void processarEventos(SDL_Event* evt, SDL_Texture** imgFundoAtual, int* fundoAux) {
     int mouseX = evt->button.x;
     int mouseY = evt->button.y;
 
     switch (estadoAtual) {
         case MENU_PRINCIPAL:
             if (evt->type == SDL_MOUSEBUTTONDOWN) {
-                if (mouseY >= SCREEN_HEIGHT / 2 - 100 && mouseY <= SCREEN_HEIGHT / 2 - 60 && mouseX >= SCREEN_WIDTH / 2 - 50 && mouseX <= SCREEN_WIDTH / 2 + 50) {
+                if (mouseY >= 200 && mouseY <= 240 && mouseX >= 350 && mouseX <= 450) {
                     estadoAtual = MENU_JOGAR;
-                } else if (mouseY >= SCREEN_HEIGHT / 2 && mouseY <= SCREEN_HEIGHT / 2 + 40 && mouseX >= SCREEN_WIDTH / 2 - 50 && mouseX <= SCREEN_WIDTH / 2 + 50) {
+                } else if (mouseY >= 300 && mouseY <= 340 && mouseX >= 350 && mouseX <= 450) {
                     estadoAtual = MENU_SOBRE;
-                } else if (mouseY >= SCREEN_HEIGHT / 2 + 100 && mouseY <= SCREEN_HEIGHT / 2 + 140 && mouseX >= SCREEN_WIDTH / 2 - 50 && mouseX <= SCREEN_WIDTH / 2 + 50) {
+                } else if (mouseY >= 400 && mouseY <= 440 && mouseX >= 350 && mouseX <= 450) {
                     estadoAtual = SAIR;
                 }
             }
@@ -195,7 +200,7 @@ void processarEventos(SDL_Event* evt) {
 
         case MENU_SOBRE:
             if (evt->type == SDL_MOUSEBUTTONDOWN) {
-                if (mouseY >= SCREEN_HEIGHT - 100 && mouseY <= SCREEN_HEIGHT - 60 && mouseX >= SCREEN_WIDTH / 2 - 50 && mouseX <= SCREEN_WIDTH / 2 + 50) {
+                if (mouseY >= 500 && mouseY <= 540 && mouseX >= 350 && mouseX <= 450) {
                     estadoAtual = MENU_PRINCIPAL;
                 }
             }
@@ -214,9 +219,9 @@ void processarEventos(SDL_Event* evt) {
 
         case PAUSADO:
             if (evt->type == SDL_MOUSEBUTTONDOWN) {
-                if (mouseY >= SCREEN_HEIGHT / 2 - 20 && mouseY <= SCREEN_HEIGHT / 2 + 20 && mouseX >= SCREEN_WIDTH / 2 - 50 && mouseX <= SCREEN_WIDTH / 2 + 50) {
+                if (mouseY >= 280 && mouseY <= 320 && mouseX >= 350 && mouseX <= 450) {
                     estadoAtual = JOGANDO;
-                } else if (mouseY >= SCREEN_HEIGHT / 2 + 100 && mouseY <= SCREEN_HEIGHT / 2 + 140 && mouseX >= SCREEN_WIDTH / 2 - 50 && mouseX <= SCREEN_WIDTH / 2 + 50) {
+                } else if (mouseY >= 400 && mouseY <= 440 && mouseX >= 350 && mouseX <= 450) {
                     estadoAtual = MENU_PRINCIPAL;
                 }
             }
@@ -226,7 +231,27 @@ void processarEventos(SDL_Event* evt) {
             break;
     }
 
-    if (evt->type == SDL_KEYDOWN) {
+    if (evt->type == SDL_KEYUP) { //antes era keydown
+    	if(evt->key.keysym.sym == SDLK_r){
+    		printf("\nFundoAux: %d",*fundoAux);
+			(*fundoAux)++;
+			switch(*fundoAux){
+				case 1:
+				    *imgFundoAtual = IMG_LoadTexture(renderer, "fundo1.png");
+					printf("\nFundo1");
+				break;
+				case 2:
+    				*imgFundoAtual= IMG_LoadTexture(renderer, "fundo2.png");
+					printf("\nFundo2");
+				break;
+				case 3:
+    				*imgFundoAtual = IMG_LoadTexture(renderer, "fundo3.png");
+					printf("\nFundo3");
+				break;
+				default: 
+					*fundoAux = 0;
+			}
+		}
         if (evt->key.keysym.sym == SDLK_ESCAPE) {
             if (estadoAtual == JOGANDO) {
                 estadoAtual = PAUSADO;
@@ -239,6 +264,7 @@ void processarEventos(SDL_Event* evt) {
             Uint8 r = rand() % 256;
             Uint8 g = rand() % 256;
             Uint8 b = rand() % 256;
+            
             bola.r = r;
             bola.g = g;
             bola.b = b;
@@ -284,10 +310,10 @@ void mainLoop() {
     Uint32 startTime = SDL_GetTicks();
     Uint32 deltaTime = 0;
     Uint32 frameStart = startTime;
-
+	int fundoAux = 0;
     int in_game = 1;
-    SDL_Texture* imgFundoQuadra = IMG_LoadTexture(renderer, "fundo1.png");
-    SDL_Texture* imgFundoCampo = IMG_LoadTexture(renderer, "fundo2.png");
+    SDL_Texture* imgFundoQuadra = IMG_LoadTexture(renderer, "fundo3.png");
+    SDL_Texture* imgFundoCampo = IMG_LoadTexture(renderer, "fundo1.png");
     SDL_Texture* imgFundoAtual = imgFundoQuadra;
     while (in_game) {
         Uint32 frameTime = SDL_GetTicks() - frameStart;
@@ -303,7 +329,7 @@ void mainLoop() {
             if (event.type == SDL_QUIT) {
                 in_game = 0;
             } else {
-                processarEventos(&event);
+                processarEventos(&event, &imgFundoAtual, &fundoAux);
             }
         }
 
