@@ -14,6 +14,8 @@
 // srand(time(NULL));
 //
 
+//gcc nova.c -lSDL2 -lSDL2_gfx -lSDL2_image -lSDL2_ttf -lm -o nova.exe
+
 enum estadoGoleiro {esperando = 0, agarrando};
 enum estadoBola {parada = 0, girando};
 enum estadoBarra {off = 0, on};
