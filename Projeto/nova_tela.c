@@ -286,10 +286,9 @@ void mainLoop() {
     Uint32 frameStart = startTime;
 
     int in_game = 1;
-    SDL_Texture* imgFundoQuadra = IMG_LoadTexture(renderer, "fundoembaixadinhas1.png");
-    SDL_Texture* imgFundoCampo = IMG_LoadTexture(renderer, "fundoembaixadinhas.png");
+    SDL_Texture* imgFundoQuadra = IMG_LoadTexture(renderer, "fundo1.png");
+    SDL_Texture* imgFundoCampo = IMG_LoadTexture(renderer, "fundo2.png");
     SDL_Texture* imgFundoAtual = imgFundoQuadra;
-
     while (in_game) {
         Uint32 frameTime = SDL_GetTicks() - frameStart;
         frameStart = SDL_GetTicks();
@@ -308,24 +307,37 @@ void mainLoop() {
             }
         }
 
-        if (estadoAtual == MENU_PRINCIPAL) {
-            desenhaMenuPrincipal();
-        } else if (estadoAtual == MENU_SOBRE) {
-            desenhaTelaSobre();
-        } else if (estadoAtual == JOGANDO) {
+	switch(estadoAtual){
+		case MENU_PRINCIPAL:
+			desenhaMenuPrincipal();
+			break;
+		
+		case MENU_SOBRE:
+			desenhaTelaSobre();
+			break;
+		
+		case JOGANDO:
             SDL_RenderCopy(renderer, imgFundoAtual, NULL, NULL);
             movimentoBola(&bola, frameTime);
             desenhoBola(&bola);
+            
             SDL_Color corTexto = { 0, 0, 0, 255 };
             char textoContador[50];
             snprintf(textoContador, sizeof(textoContador), "Contador: %d", cont);
-            renderizaTexto(textoContador, 10, 10, corTexto);
-        } else if (estadoAtual == PAUSADO) {
-            desenhaTelaPausado();
-        } else if (estadoAtual == SAIR) {
-            in_game = 0;
-        }
-
+            
+            renderizaTexto(textoContador, 10, 10, corTexto);		
+        
+			break;
+		
+		case PAUSADO:
+			desenhaTelaPausado();
+			break;
+			
+		case SAIR:
+			in_game = 0;
+			break;
+		}	
+		
         SDL_RenderPresent(renderer);
         deltaTime = SDL_GetTicks() - startTime;
         if (frameTime < 16) {
