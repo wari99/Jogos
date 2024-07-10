@@ -17,6 +17,7 @@ int recordeGeral = 0;
 SDL_Window* window = NULL;
 SDL_Renderer* renderer = NULL;
 TTF_Font* font = NULL;
+TTF_Font* fontmenor = NULL;
 
 typedef struct {
     int x, y;
@@ -120,10 +121,22 @@ void renderizaTexto(const char* text, int x, int y, SDL_Color corTexto) {
     SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
     SDL_FreeSurface(surface);
 
-    int texW = 0;
+    int texW = 0; 
+    int texH = 0;
+    
+    SDL_QueryTexture(texture, NULL, NULL, &texW, &texH);
+    SDL_Rect dstRect = { x, y, texW, texH };
+    SDL_RenderCopy(renderer, texture, NULL, &dstRect);
+    SDL_DestroyTexture(texture);
+}
+
+void textoAuxiliar(const char* text, int x, int y, SDL_Color corTexto) {
+    SDL_Surface* surface = TTF_RenderText_Solid(fontmenor, text, corTexto);
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+    SDL_FreeSurface(surface);
+    int texW = 0; 
     int texH = 0;
     SDL_QueryTexture(texture, NULL, NULL, &texW, &texH);
-
     SDL_Rect dstRect = { x, y, texW, texH };
     SDL_RenderCopy(renderer, texture, NULL, &dstRect);
     SDL_DestroyTexture(texture);
@@ -164,21 +177,26 @@ void desenhaMenuPrincipal() {
 }
 
 void desenhaTelaSobre() {
-    SDL_Color corTexto = { 0, 0, 0, 255 };
-    renderizaTexto("Trabalho realizado para a disciplina de Estruturas de linguagens \n 2024.1", 20, 20, corTexto);
-    renderizaTexto("VOLTAR", SCREEN_WIDTH / 2 - 50, SCREEN_HEIGHT - 100, corTexto);   
-    
-    
+    SDL_Color azul_pastel = { 185,225,255, 255 };    
+    SDL_Color branco = { 225,225,225, 255 };    
+    SDL_Color corTexto = { 35,40,43, 255 };
+        
+    textoAuxiliar("Trabalho para a disciplina de Estruturas de linguagens 2024.1", 120, 120, branco);
+    textoAuxiliar("Como jogar:",350,200,azul_pastel);    
+
+    textoAuxiliar("Clique para manter a bola no ar (Nao deixe cair!!)",130,230,azul_pastel);    
+    textoAuxiliar("Aperte ENTER para visualizar o recorde atual e global",130,260,azul_pastel);    
+    textoAuxiliar("Aperte R para mudar a tela de fundo",130,290,azul_pastel); 
+            
+    renderizaTexto("VOLTAR", 350, 500, corTexto);   
 }
 
 void desenhaTelaPausado() {
     SDL_Color corTexto = { 255,180,180, 255 };
     SDL_Color opcoes = { 180,175,175, 255 };
 
-        
-    renderizaTexto("PAUSADO", 350, 200, corTexto);
-    renderizaTexto("CONTINUAR", 350, 300, opcoes);
-    renderizaTexto("MENU PRINCIPAL", 350, 400, opcoes);
+    renderizaTexto("CONTINUAR", 320, 320, opcoes); //350 300 - 350 400
+    renderizaTexto("MENU PRINCIPAL", 320, 350, opcoes);
 }
 
 void processarEventos(SDL_Event* evt, SDL_Texture** imgFundoAtual, int* fundoAux) {
@@ -208,7 +226,6 @@ void processarEventos(SDL_Event* evt, SDL_Texture** imgFundoAtual, int* fundoAux
 
         case MENU_JOGAR:
             estadoAtual = JOGANDO;   
-            
             break;
 
         case JOGANDO:
@@ -219,9 +236,9 @@ void processarEventos(SDL_Event* evt, SDL_Texture** imgFundoAtual, int* fundoAux
 
         case PAUSADO:
             if (evt->type == SDL_MOUSEBUTTONDOWN) {
-                if (mouseY >= 280 && mouseY <= 320 && mouseX >= 350 && mouseX <= 450) {
+                if (mouseY >= 300 && mouseY <= 340 && mouseX >= 320 && mouseX <= 420) {
                     estadoAtual = JOGANDO;
-                } else if (mouseY >= 400 && mouseY <= 440 && mouseX >= 350 && mouseX <= 450) {
+                } else if (mouseY >= 350 && mouseY <= 390 && mouseX >= 320 && mouseX <= 400) {
                     estadoAtual = MENU_PRINCIPAL;
                 }
             }
@@ -315,6 +332,11 @@ void mainLoop() {
     SDL_Texture* imgFundoQuadra = IMG_LoadTexture(renderer, "fundo3.png");
     SDL_Texture* imgFundoCampo = IMG_LoadTexture(renderer, "fundo1.png");
     SDL_Texture* imgFundoAtual = imgFundoQuadra;
+
+    SDL_Texture* imgFundoMenu = IMG_LoadTexture(renderer, "fundomenu.png");    
+    SDL_Texture* imgFundoSobre = IMG_LoadTexture(renderer, "fundosobre.png");
+    SDL_Texture* imgFundoPausa = IMG_LoadTexture(renderer, "fundopausa.png");
+        
     while (in_game) {
         Uint32 frameTime = SDL_GetTicks() - frameStart;
         frameStart = SDL_GetTicks();
@@ -335,10 +357,12 @@ void mainLoop() {
 
 	switch(estadoAtual){
 		case MENU_PRINCIPAL:
+            SDL_RenderCopy(renderer, imgFundoMenu, NULL, NULL);		
 			desenhaMenuPrincipal();
 			break;
 		
 		case MENU_SOBRE:
+            SDL_RenderCopy(renderer, imgFundoSobre, NULL, NULL);		
 			desenhaTelaSobre();
 			break;
 		
@@ -356,7 +380,8 @@ void mainLoop() {
 			break;
 		
 		case PAUSADO:
-			desenhaTelaPausado();
+            SDL_RenderCopy(renderer, imgFundoPausa, NULL, NULL);		
+            desenhaTelaPausado();
 			break;
 			
 		case SAIR:
@@ -387,7 +412,7 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    window = SDL_CreateWindow("Embaixadinha", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
+    window = SDL_CreateWindow("Confetti's SIDETURN", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
     if (!window) {
         printf("Erro ao criar janela: %s\n", SDL_GetError());
         SDL_Quit();
@@ -403,7 +428,17 @@ int main(int argc, char* argv[]) {
     }
 
     font = TTF_OpenFont("Mont-HeavyDEMO.otf", 24);
+    
+    fontmenor = TTF_OpenFont("Mont-HeavyDEMO.otf", 18);
     if (!font) {
+        printf("Erro ao carregar fonte: %s\n", TTF_GetError());
+        SDL_DestroyRenderer(renderer);
+        SDL_DestroyWindow(window);
+        SDL_Quit();
+        return 1;
+    }
+
+    if (!fontmenor) {
         printf("Erro ao carregar fonte: %s\n", TTF_GetError());
         SDL_DestroyRenderer(renderer);
         SDL_DestroyWindow(window);
