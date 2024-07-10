@@ -2,9 +2,11 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include <math.h>
-#define MAX(x,y) (((x) > (y)) ? (x) : (y))
-#include <SDL2/SDL_messagebox.h>
 #include <stdio.h>
+#include <SDL2/SDL_image.h>
+#include <SDL2/SDL_messagebox.h>
+
+#define MAX(x,y) (((x) > (y)) ? (x) : (y))
 
 const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 600;
@@ -21,7 +23,6 @@ typedef struct {
     int raio;
     float velocidade_Y;
     float velocidade_X; 
-	
     Uint8 r, g, b, a;
     int encostaChao; 
 } Bola;
@@ -34,86 +35,87 @@ const float VEL_HORIZONTAL = 200.0f;
 
 int cont = 0;
 
+typedef enum {
+    MENU_PRINCIPAL,
+    MENU_JOGAR,
+    MENU_SOBRE,
+    JOGANDO,
+    PAUSADO,
+    SAIR
+} EstadoMenu;
+
+EstadoMenu estadoAtual = MENU_PRINCIPAL;
+
 void desenhoBola(const Bola* bola) {
     filledCircleRGBA(renderer, bola->x, bola->y, bola->raio, bola->r, bola->g, bola->b, bola->a);
 }
 
 void movimentoBola(Bola* bola, Uint32 deltaTime) {
-	
-    // Aplicação da gravidade
-    bola->velocidade_Y += GRAVIDADE * deltaTime / 1000.0f; // Convertendo deltaTime para segundos
+    bola->velocidade_Y += GRAVIDADE * deltaTime / 1000.0f;
     bola->y += bola->velocidade_Y * deltaTime / 1000.0f;
     bola->x += bola->velocidade_X * deltaTime / 1000.0f;
 
-
-    if (bola->y + bola->raio > SCREEN_HEIGHT) { //colidir com os "tetos" 
+    if (bola->y + bola->raio > SCREEN_HEIGHT) {
         bola->y = SCREEN_HEIGHT - bola->raio;
         bola->velocidade_Y = 0;
-        bola->encostaChao = 1; //bola no chao
-		
-        cont = 0; //encostou no chao = cont reseta
+        bola->encostaChao = 1;
+        cont = 0;
     } else if (bola->y - bola->raio < 0) {
         bola->y = bola->raio;
         bola->velocidade_Y = 0;
-    } else bola->encostaChao = 0; //bola esta no ar
+    } else {
+        bola->encostaChao = 0;
+    }
 
-
-    if (bola->x + bola->raio > SCREEN_WIDTH) { //colidindo com as "paredes"
+    if (bola->x + bola->raio > SCREEN_WIDTH) {
         bola->x = SCREEN_WIDTH - bola->raio;
-        bola->velocidade_X = -bola->velocidade_X; //invertendo velocidade horizontal
-		
+        bola->velocidade_X = -bola->velocidade_X;
     } else if (bola->x - bola->raio < 0) {
         bola->x = bola->raio;
-        bola->velocidade_X = -bola->velocidade_X; //invertendo velocidade horizontal
+        bola->velocidade_X = -bola->velocidade_X;
     }
 }
 
 void acaoClique(int mouseX, int mouseY) {
-    //distancia entre o clique e a bola
     int dx = mouseX - bola.x;
     int dy = mouseY - bola.y;
     float distanciaFormula = dx * dx + dy * dy;
 
     if (distanciaFormula <= bola.raio * bola.raio) {
         if (mouseY < bola.y - bola.raio / 3) {
-            bola.velocidade_Y = -VEL_INICIAL * 0.5;  //clique na parte de cima VELINICIAL * um pouco
+            bola.velocidade_Y = -VEL_INICIAL * 0.5;
         } else if (mouseY > bola.y + bola.raio / 3) {
-            bola.velocidade_Y = -VEL_INICIAL * 0.8; //clique na parte de baixo VELINICIAL * muito
+            bola.velocidade_Y = -VEL_INICIAL * 0.8;
         } else { 
-            bola.velocidade_Y = -VEL_INICIAL; //clique no meio da bola,  somente VELINICIAL
+            bola.velocidade_Y = -VEL_INICIAL;
         }
 
         if (mouseX < bola.x) { 
-            bola.velocidade_X = VEL_HORIZONTAL; //clique lado esquerdo = vai p direita
+            bola.velocidade_X = VEL_HORIZONTAL;
         } else if (mouseX > bola.x) {
-            bola.velocidade_X = -VEL_HORIZONTAL; //clique lado direito = vai p esquerda
+            bola.velocidade_X = -VEL_HORIZONTAL;
         }
 
-        cont++; //cont++ se  estiver no ar 
+        cont++;
         
-        if (cont > recordeSessao) { //att  so o rec da sessao
-        	recordeSessao = cont;
+        if (cont > recordeSessao) {
+            recordeSessao = cont;
         }
         
-        if (cont > recordeGeral){ 
-        	recordeGeral = cont;
-        	
-        	FILE* arquivo = fopen("recorde_geral.txt", "w");
-        	if(arquivo){
-        		fprintf(arquivo, "%d", recordeGeral);
-        		
-        		//fscanf(arquivo, "%d", &recordeGeral);
-        		fclose(arquivo);	
-        	}else{
-				SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Erro!", "Nao foi possivel salvar!", window);
-        	}
-        	
+        if (cont > recordeGeral) {
+            recordeGeral = cont;
+            FILE* arquivo = fopen("recorde_geral.txt", "w");
+            if (arquivo) {
+                fprintf(arquivo, "%d", recordeGeral);
+                fclose(arquivo);    
+            } else {
+                SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Erro!", "Nao foi possivel salvar!", window);
+            }
         }    
     }
 }
 
 void renderizaTexto(const char* text, int x, int y, SDL_Color corTexto) {
-	
     SDL_Surface* surface = TTF_RenderText_Solid(font, text, corTexto);
     SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
     SDL_FreeSurface(surface);
@@ -137,65 +139,110 @@ int AUX_WaitEventTimeoutCount(SDL_Event* evt, Uint32* ms) {
     return 0;
 }
 
+
 void zerarRecordes() {
-	recordeGeral = 0;
-	recordeSessao = 0;
-	
-	FILE* arquivo = fopen("recorde_geral.txt", "w");
-	if(arquivo){
-		fprintf(arquivo, "%d", recordeGeral);
-		fclose(arquivo);
-	}
-	else {
-		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Erro!", "Nao foi possivel resetar!", window);
-	}
+    recordeGeral = 0;
+    recordeSessao = 0;
+    
+    FILE* arquivo = fopen("recorde_geral.txt", "w");
+    if (arquivo) {
+        fprintf(arquivo, "%d", recordeGeral);
+        fclose(arquivo);
+    } else {
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Erro!", "Nao foi possivel resetar!", window);
+    }
 }
 
-void mainLoop() {
-    Uint32 startTime = SDL_GetTicks(); //tempo  inicial
-    Uint32 deltaTime = 0; //tempo dsd ultima att
-    Uint32 frameStart = startTime; //tempo inicio do frame
+void desenhaMenuPrincipal() {
+    SDL_Color corTexto = { 0, 0, 0, 255 };
+    renderizaTexto("JOGAR", SCREEN_WIDTH / 2 - 50, SCREEN_HEIGHT / 2 - 100, corTexto);
+    renderizaTexto("SOBRE", SCREEN_WIDTH / 2 - 50, SCREEN_HEIGHT / 2, corTexto);
+    renderizaTexto("SAIR", SCREEN_WIDTH / 2 - 50, SCREEN_HEIGHT / 2 + 100, corTexto);
+}
 
-    int in_game = 1;
+void desenhaTelaSobre() {
+    SDL_Color corTexto = { 0, 0, 0, 255 };
+    renderizaTexto("Trabalho realizado para a disciplina de Estruturas de linguagens \n 2024.1", 20, 20, corTexto);
+    renderizaTexto("VOLTAR", SCREEN_WIDTH / 2 - 50, SCREEN_HEIGHT - 100, corTexto);
+}
 
-    while (in_game) {
-    	FILE* arquivo = fopen("recorde_geral.txt", "r");
-    	
-    	if(arquivo){
-    		fscanf(arquivo, "%d", &recordeGeral);
-    		fclose(arquivo);
-    	}else{
-    		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Erro", "N foi possivel carregar", window);
-    	}
-    
-        Uint32 frameTime = SDL_GetTicks() - frameStart;
-        frameStart = SDL_GetTicks();
+void desenhaTelaJogar() {
+}
 
-        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-        SDL_RenderClear(renderer);
+void desenhaTelaPausado() {
+    SDL_Color corTexto = { 0, 0, 0, 255 };
+    renderizaTexto("PAUSADO", SCREEN_WIDTH / 2 - 50, SCREEN_HEIGHT / 2 - 100, corTexto);
+    renderizaTexto("CONTINUAR", SCREEN_WIDTH / 2 - 50, SCREEN_HEIGHT / 2, corTexto);
+    renderizaTexto("MENU PRINCIPAL", SCREEN_WIDTH / 2 - 50, SCREEN_HEIGHT / 2 + 100, corTexto);
+}
 
-        movimentoBola(&bola, frameTime); //att bola com base no frameTime
-        desenhoBola(&bola); //desenho da bola
+void processarEventos(SDL_Event* evt) {
+    int mouseX = evt->button.x;
+    int mouseY = evt->button.y;
 
-        //contador em texto 
-        SDL_Color corTexto = { 0, 0, 0, 255 };
-        char textoContador[50];
-        snprintf(textoContador, sizeof(textoContador), "Embaixadinhas: %d", cont);
-        renderizaTexto(textoContador, 10, 10, corTexto);
+    switch (estadoAtual) {
+        case MENU_PRINCIPAL:
+            if (evt->type == SDL_MOUSEBUTTONDOWN) {
+                if (mouseY >= SCREEN_HEIGHT / 2 - 100 && mouseY <= SCREEN_HEIGHT / 2 - 60 && mouseX >= SCREEN_WIDTH / 2 - 50 && mouseX <= SCREEN_WIDTH / 2 + 50) {
+                    estadoAtual = MENU_JOGAR;
+                } else if (mouseY >= SCREEN_HEIGHT / 2 && mouseY <= SCREEN_HEIGHT / 2 + 40 && mouseX >= SCREEN_WIDTH / 2 - 50 && mouseX <= SCREEN_WIDTH / 2 + 50) {
+                    estadoAtual = MENU_SOBRE;
+                } else if (mouseY >= SCREEN_HEIGHT / 2 + 100 && mouseY <= SCREEN_HEIGHT / 2 + 140 && mouseX >= SCREEN_WIDTH / 2 - 50 && mouseX <= SCREEN_WIDTH / 2 + 50) {
+                    estadoAtual = SAIR;
+                }
+            }
+            break;
 
-        SDL_RenderPresent(renderer);
+        case MENU_SOBRE:
+            if (evt->type == SDL_MOUSEBUTTONDOWN) {
+                if (mouseY >= SCREEN_HEIGHT - 100 && mouseY <= SCREEN_HEIGHT - 60 && mouseX >= SCREEN_WIDTH / 2 - 50 && mouseX <= SCREEN_WIDTH / 2 + 50) {
+                    estadoAtual = MENU_PRINCIPAL;
+                }
+            }
+            break;
 
-        //espera eventos 
-        SDL_Event event;
-        Uint32 waitTime = 16; 
+        case MENU_JOGAR:
+            estadoAtual = JOGANDO;   
+            
+            break;
 
-        if (AUX_WaitEventTimeoutCount(&event, &waitTime)) {
-            if (event.type == SDL_MOUSEBUTTONDOWN) {
-                acaoClique(event.button.x, event.button.y);
-            } else if (event.type == SDL_QUIT) {
-                in_game = 0; 
-            } else if (event.type == SDL_KEYDOWN) {
-            	if (event.key.keysym.sym == SDLK_RETURN){
+        case JOGANDO:
+            if (evt->type == SDL_MOUSEBUTTONDOWN) {
+                acaoClique(mouseX, mouseY);
+            }
+            break;
+
+        case PAUSADO:
+            if (evt->type == SDL_MOUSEBUTTONDOWN) {
+                if (mouseY >= SCREEN_HEIGHT / 2 - 20 && mouseY <= SCREEN_HEIGHT / 2 + 20 && mouseX >= SCREEN_WIDTH / 2 - 50 && mouseX <= SCREEN_WIDTH / 2 + 50) {
+                    estadoAtual = JOGANDO;
+                } else if (mouseY >= SCREEN_HEIGHT / 2 + 100 && mouseY <= SCREEN_HEIGHT / 2 + 140 && mouseX >= SCREEN_WIDTH / 2 - 50 && mouseX <= SCREEN_WIDTH / 2 + 50) {
+                    estadoAtual = MENU_PRINCIPAL;
+                }
+            }
+            break;
+
+        default:
+            break;
+    }
+
+    if (evt->type == SDL_KEYDOWN) {
+        if (evt->key.keysym.sym == SDLK_ESCAPE) {
+            if (estadoAtual == JOGANDO) {
+                estadoAtual = PAUSADO;
+            } else if (estadoAtual == PAUSADO) {
+                estadoAtual = JOGANDO;
+            } else if (estadoAtual == MENU_PRINCIPAL) {
+                estadoAtual = MENU_JOGAR;
+            }
+        } else if (evt->key.keysym.sym == SDLK_SPACE && estadoAtual == JOGANDO) {
+            Uint8 r = rand() % 256;
+            Uint8 g = rand() % 256;
+            Uint8 b = rand() % 256;
+            bola.r = r;
+            bola.g = g;
+            bola.b = b;
+        }else if (evt->key.keysym.sym == SDLK_RETURN){
             		// apertando tecla ENTER pressionada 
                     char mensagem[200];
                     snprintf(mensagem, sizeof(mensagem), "Recorde da sessão atual: %d\nRecorde Geral: %d\n\nResetar todas as pontuacoes?", recordeSessao, recordeGeral);
@@ -230,16 +277,64 @@ void mainLoop() {
                     }
               
             	};
+    }
+}
+
+void mainLoop() {
+    Uint32 startTime = SDL_GetTicks();
+    Uint32 deltaTime = 0;
+    Uint32 frameStart = startTime;
+
+    int in_game = 1;
+    SDL_Texture* imgFundoQuadra = IMG_LoadTexture(renderer, "fundoembaixadinhas1.png");
+    SDL_Texture* imgFundoCampo = IMG_LoadTexture(renderer, "fundoembaixadinhas.png");
+    SDL_Texture* imgFundoAtual = imgFundoQuadra;
+
+    while (in_game) {
+        Uint32 frameTime = SDL_GetTicks() - frameStart;
+        frameStart = SDL_GetTicks();
+
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+        SDL_RenderClear(renderer);
+
+        SDL_Event event;
+        Uint32 waitTime = 16;
+
+        if (AUX_WaitEventTimeoutCount(&event, &waitTime)) {
+            if (event.type == SDL_QUIT) {
+                in_game = 0;
+            } else {
+                processarEventos(&event);
             }
-         
         }
 
-        //calculo do deltaTime global
+        if (estadoAtual == MENU_PRINCIPAL) {
+            desenhaMenuPrincipal();
+        } else if (estadoAtual == MENU_SOBRE) {
+            desenhaTelaSobre();
+        } else if (estadoAtual == JOGANDO) {
+            SDL_RenderCopy(renderer, imgFundoAtual, NULL, NULL);
+            movimentoBola(&bola, frameTime);
+            desenhoBola(&bola);
+            SDL_Color corTexto = { 0, 0, 0, 255 };
+            char textoContador[50];
+            snprintf(textoContador, sizeof(textoContador), "Contador: %d", cont);
+            renderizaTexto(textoContador, 10, 10, corTexto);
+        } else if (estadoAtual == PAUSADO) {
+            desenhaTelaPausado();
+        } else if (estadoAtual == SAIR) {
+            in_game = 0;
+        }
+
+        SDL_RenderPresent(renderer);
         deltaTime = SDL_GetTicks() - startTime;
         if (frameTime < 16) {
             SDL_Delay(16 - frameTime);
         }
     }
+
+    SDL_DestroyTexture(imgFundoQuadra);
+    SDL_DestroyTexture(imgFundoCampo);
 }
 
 int main(int argc, char* argv[]) {
@@ -276,6 +371,14 @@ int main(int argc, char* argv[]) {
         SDL_DestroyWindow(window);
         SDL_Quit();
         return 1;
+    }
+
+    FILE* arquivo = fopen("recorde_geral.txt", "r");
+    if (arquivo) {
+        fscanf(arquivo, "%d", &recordeGeral);
+        fclose(arquivo);
+    } else {
+        recordeGeral = 0;
     }
 
     mainLoop();
